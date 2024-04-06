@@ -11,7 +11,7 @@ import (
 
 	psql "pickrewardapi/internal/pkg/postgres"
 
-	channelDTO "pickrewardapi/internal/domain/channel_label/dto"
+	channelDTO "pickrewardapi/internal/domain/channel/dto"
 )
 
 type ChannelLabelStore interface {
@@ -20,36 +20,36 @@ type ChannelLabelStore interface {
 	GetChannelLabelByLabel(ctx context.Context, label int32) (*channelDTO.ChannelLabelDTO, error)
 }
 
-type impl struct {
+type channelLabelImpl struct {
 	dig.In
 
 	primary *pgx.ConnPool
 }
 
-func New(sql *psql.Psql) ChannelLabelStore {
+func NewChannelLabel(sql *psql.Psql) ChannelLabelStore {
 	logPos := "[channel_label.store][New]"
 
 	log.WithFields(log.Fields{
 		"pos": logPos,
 	}).Info("init channel label store")
 
-	return &impl{
+	return &channelLabelImpl{
 		primary: sql.Primary,
 	}
 }
 
 const CHANNEL_LABEL = "channel_label"
-const ALL_COLUMNS = " \"label\", \"name\", \"show\" "
+const ALL_CHANNEL_LABEL_COLUMNS = " \"label\", \"name\", \"show\" "
 
 var MODIFIED_CHANNEL_LABEL_STAT = fmt.Sprintf(
 	"INSERT INTO %s "+
 		"(%s) VALUES ($1, $2, $3)"+
 		" ON CONFLICT(label) DO UPDATE SET  "+
 		" \"name\" = $4, \"show\" = $5 ",
-	CHANNEL_LABEL, ALL_COLUMNS,
+	CHANNEL_LABEL, ALL_CHANNEL_LABEL_COLUMNS,
 )
 
-func (im *impl) ModifiedChannelLabel(ctx context.Context, channelLabelDTO *channelDTO.ChannelLabelDTO) error {
+func (im *channelLabelImpl) ModifiedChannelLabel(ctx context.Context, channelLabelDTO *channelDTO.ChannelLabelDTO) error {
 	logPos := "[channel_label.store][ModifiedChannelLabel]"
 
 	tx, err := im.primary.Begin()
@@ -101,10 +101,10 @@ func (im *impl) ModifiedChannelLabel(ctx context.Context, channelLabelDTO *chann
 var SELECT_CHANNEL_LABELS_STAT = fmt.Sprintf(
 	" SELECT %s "+
 		" FROM %s ORDER BY label ",
-	ALL_COLUMNS, CHANNEL_LABEL,
+	ALL_CHANNEL_LABEL_COLUMNS, CHANNEL_LABEL,
 )
 
-func (im *impl) GetAllChannelLabels(ctx context.Context) ([]*channelDTO.ChannelLabelDTO, error) {
+func (im *channelLabelImpl) GetAllChannelLabels(ctx context.Context) ([]*channelDTO.ChannelLabelDTO, error) {
 	logPos := "[channel_label.store][GetAllChannelLabels]"
 
 	channelLabelDTOs := []*channelDTO.ChannelLabelDTO{}
@@ -142,10 +142,10 @@ var SELECT_CHANNEL_LABEL_BY_LABEL_STAT = fmt.Sprintf(
 	" SELECT %s "+
 		" FROM %s "+
 		" WHERE label = $1 ",
-	ALL_COLUMNS, CHANNEL_LABEL,
+	ALL_CHANNEL_LABEL_COLUMNS, CHANNEL_LABEL,
 )
 
-func (im *impl) GetChannelLabelByLabel(ctx context.Context, label int32) (*channelDTO.ChannelLabelDTO, error) {
+func (im *channelLabelImpl) GetChannelLabelByLabel(ctx context.Context, label int32) (*channelDTO.ChannelLabelDTO, error) {
 	logPos := "[channel_label.store][GetAllChannelLabels]"
 
 	channelLabelDTO := &channelDTO.ChannelLabelDTO{}

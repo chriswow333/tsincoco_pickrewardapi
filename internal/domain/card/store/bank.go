@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	bankDTO "pickrewardapi/internal/domain/bank/dto"
+	cardDTO "pickrewardapi/internal/domain/card/dto"
 	commonM "pickrewardapi/internal/shared/common/model"
 
 	psql "pickrewardapi/internal/pkg/postgres"
@@ -16,26 +16,26 @@ import (
 )
 
 type BankStore interface {
-	ModifiedBank(ctx context.Context, bankDTO *bankDTO.BankDTO) error
-	GetBankByID(ctx context.Context, ID string) (*bankDTO.BankDTO, error)
-	GetAllBanks(ctx context.Context, status commonM.Status) ([]*bankDTO.BankDTO, error)
-	GetBankNameByBankID(ctx context.Context, ID string) (*bankDTO.BankDTO, error)
+	ModifiedBank(ctx context.Context, bankDTO *cardDTO.BankDTO) error
+	GetBankByID(ctx context.Context, ID string) (*cardDTO.BankDTO, error)
+	GetAllBanks(ctx context.Context, status commonM.Status) ([]*cardDTO.BankDTO, error)
+	GetBankNameByBankID(ctx context.Context, ID string) (*cardDTO.BankDTO, error)
 }
 
-type impl struct {
+type bankImpl struct {
 	dig.In
 
 	primary *pgx.ConnPool
 }
 
-func New(sql *psql.Psql) BankStore {
+func NewBank(sql *psql.Psql) BankStore {
 	logPos := "[bank.store][New]"
 
 	log.WithFields(log.Fields{
 		"pos": logPos,
 	}).Infof("init bank store")
 
-	return &impl{
+	return &bankImpl{
 		primary: sql.Primary,
 	}
 }
@@ -52,7 +52,7 @@ var MODIFIED_BANK_STAT = fmt.Sprintf(
 	BANK, ALL_COLUMNS,
 )
 
-func (im *impl) ModifiedBank(ctx context.Context, bankDTO *bankDTO.BankDTO) error {
+func (im *bankImpl) ModifiedBank(ctx context.Context, bankDTO *cardDTO.BankDTO) error {
 	logPos := "[card.store][ModifiedBank]"
 
 	tx, err := im.primary.Begin()
@@ -113,7 +113,7 @@ var SELECT_BANK_BY_ID_STAT = fmt.Sprintf(
 	ALL_COLUMNS, BANK,
 )
 
-func (im *impl) GetBankByID(ctx context.Context, ID string) (*bankDTO.BankDTO, error) {
+func (im *bankImpl) GetBankByID(ctx context.Context, ID string) (*cardDTO.BankDTO, error) {
 	logPos := "[bank.store][GetBankByID]"
 
 	rows, err := im.primary.Query(SELECT_BANK_BY_ID_STAT, ID)
@@ -127,10 +127,9 @@ func (im *impl) GetBankByID(ctx context.Context, ID string) (*bankDTO.BankDTO, e
 
 	defer rows.Close()
 
-	var bankResult *bankDTO.BankDTO
-	for rows.Next() {
+	if rows.Next() {
 
-		bankResult := &bankDTO.BankDTO{}
+		bankResult := &cardDTO.BankDTO{}
 		selector := []interface{}{
 			&bankResult.ID,
 			&bankResult.Name,
@@ -148,21 +147,10 @@ func (im *impl) GetBankByID(ctx context.Context, ID string) (*bankDTO.BankDTO, e
 			return nil, err
 		}
 
-		if rows.Next() {
-			log.WithFields(log.Fields{
-				"pos":     logPos,
-				"bank.ID": ID,
-			}).Error("There have more than one record")
-			return nil, errors.New("there have more than one record")
-		}
-
+		return bankResult, nil
 	}
 
-	if bankResult == nil {
-		return nil, errors.New("not found bank")
-	}
-
-	return bankResult, nil
+	return nil, errors.New("not found bank")
 
 }
 
@@ -173,10 +161,10 @@ var SELECT_ALL_BANK_STAT = fmt.Sprintf(
 	ALL_COLUMNS, BANK,
 )
 
-func (im *impl) GetAllBanks(ctx context.Context, status commonM.Status) ([]*bankDTO.BankDTO, error) {
+func (im *bankImpl) GetAllBanks(ctx context.Context, status commonM.Status) ([]*cardDTO.BankDTO, error) {
 	logPos := "[bank.store][GetAllBanks]"
 
-	bankDTOs := []*bankDTO.BankDTO{}
+	bankDTOs := []*cardDTO.BankDTO{}
 	rows, err := im.primary.Query(SELECT_ALL_BANK_STAT, status)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -189,7 +177,7 @@ func (im *impl) GetAllBanks(ctx context.Context, status commonM.Status) ([]*bank
 
 	for rows.Next() {
 
-		bankDTO := &bankDTO.BankDTO{}
+		bankDTO := &cardDTO.BankDTO{}
 		selector := []interface{}{
 			&bankDTO.ID,
 			&bankDTO.Name,
@@ -215,7 +203,7 @@ func (im *impl) GetAllBanks(ctx context.Context, status commonM.Status) ([]*bank
 const SELECT_BANK_NAME_BY_ID_STAT = "SELECT \"id\", \"name\" " +
 	" FROM bank WHERE \"id\" = $1 "
 
-func (im *impl) GetBankNameByBankID(ctx context.Context, ID string) (*bankDTO.BankDTO, error) {
+func (im *bankImpl) GetBankNameByBankID(ctx context.Context, ID string) (*cardDTO.BankDTO, error) {
 	logPos := "[bank.store][GetBankNameByBankID]"
 
 	rows, err := im.primary.Query(SELECT_BANK_NAME_BY_ID_STAT, ID)
@@ -227,11 +215,11 @@ func (im *impl) GetBankNameByBankID(ctx context.Context, ID string) (*bankDTO.Ba
 		return nil, err
 	}
 
-	var bankResult *bankDTO.BankDTO
+	var bankResult *cardDTO.BankDTO
 	defer rows.Close()
 	for rows.Next() {
 
-		bankResult := &bankDTO.BankDTO{}
+		bankResult := &cardDTO.BankDTO{}
 		selector := []interface{}{
 			&bankResult.ID,
 			&bankResult.Name,

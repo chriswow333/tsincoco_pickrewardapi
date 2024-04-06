@@ -12,7 +12,7 @@ import (
 	"pickrewardapi/internal/application/bank/v1/handler"
 	pb "pickrewardapi/internal/application/bank/v1/proto/generated"
 
-	bankService "pickrewardapi/internal/domain/bank/service"
+	bankService "pickrewardapi/internal/domain/card/service"
 )
 
 type server struct {

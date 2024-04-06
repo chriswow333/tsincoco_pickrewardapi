@@ -7,7 +7,7 @@ create table channel (
     "channel_type" INT,
 		"create_date" BIGINT,
 		"update_date" BIGINT,
-		"channel_labels" JSON, 
+		"channel_labels" JSONB, 
 		"order" INT,
 		"channel_status" INT,
 );

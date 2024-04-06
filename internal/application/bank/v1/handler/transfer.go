@@ -3,7 +3,7 @@ package handler
 import (
 	pb "pickrewardapi/internal/application/bank/v1/proto/generated"
 
-	bankDTO "pickrewardapi/internal/domain/bank/dto"
+	bankDTO "pickrewardapi/internal/domain/card/dto"
 )
 
 func TransferBankDTOsToBank(bankDTOs []*bankDTO.BankDTO) []*pb.BanksReply_Bank {

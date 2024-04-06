@@ -8,34 +8,34 @@ import (
 
 	commonM "pickrewardapi/internal/shared/common/model"
 
-	bankDTO "pickrewardapi/internal/domain/bank/dto"
-	bankStore "pickrewardapi/internal/domain/bank/store"
+	cardDTO "pickrewardapi/internal/domain/card/dto"
+	bankStore "pickrewardapi/internal/domain/card/store"
 )
 
 type BankService interface {
-	GetBankByID(ctx context.Context, ID string) (*bankDTO.BankDTO, error)
-	GetAllBanks(ctx context.Context) ([]*bankDTO.BankDTO, error)
+	GetBankByID(ctx context.Context, ID string) (*cardDTO.BankDTO, error)
+	GetAllBanks(ctx context.Context) ([]*cardDTO.BankDTO, error)
 }
 
-type impl struct {
+type bankImpl struct {
 	dig.In
 
 	bankStore bankStore.BankStore
 }
 
-func New(
+func NewBank(
 	bankStore bankStore.BankStore,
 ) BankService {
-	return &impl{
+	return &bankImpl{
 		bankStore: bankStore,
 	}
 }
 
-func (im *impl) GetBankByID(ctx context.Context, ID string) (*bankDTO.BankDTO, error) {
+func (im *bankImpl) GetBankByID(ctx context.Context, ID string) (*cardDTO.BankDTO, error) {
 	return im.bankStore.GetBankByID(ctx, ID)
 }
 
-func (im *impl) GetAllBanks(ctx context.Context) ([]*bankDTO.BankDTO, error) {
+func (im *bankImpl) GetAllBanks(ctx context.Context) ([]*cardDTO.BankDTO, error) {
 	logPos := "[card.app.service][GetAllBanks]"
 
 	dtos, err := im.bankStore.GetAllBanks(ctx, commonM.Active)

@@ -26,24 +26,24 @@ var (
 	timeNow = time.Now
 )
 
-type impl struct {
+type cardImpl struct {
 	dig.In
 
 	cardStore cardStore.CardStore
 }
 
-func New(
+func NewCard(
 	cardStore cardStore.CardStore,
 ) CardService {
 
-	impl := &impl{
+	impl := &cardImpl{
 		cardStore: cardStore,
 	}
 
 	return impl
 }
 
-func (im *impl) GetCardsByBankID(ctx context.Context, bankID string) ([]*cardDTO.CardDTO, error) {
+func (im *cardImpl) GetCardsByBankID(ctx context.Context, bankID string) ([]*cardDTO.CardDTO, error) {
 	logPos := "[card.service][GetCardsByBankID]"
 
 	dtos, err := im.cardStore.GetCardsByBankID(ctx, bankID, commonM.Active)
@@ -57,7 +57,7 @@ func (im *impl) GetCardsByBankID(ctx context.Context, bankID string) ([]*cardDTO
 	return dtos, nil
 }
 
-func (im *impl) GetCardByID(ctx context.Context, cardID string) (*cardDTO.CardDTO, error) {
+func (im *cardImpl) GetCardByID(ctx context.Context, cardID string) (*cardDTO.CardDTO, error) {
 	logPos := "[card.service][GetCardByID]"
 
 	card, err := im.cardStore.GetByCardID(ctx, cardID)
@@ -78,7 +78,7 @@ func (im *impl) GetCardByID(ctx context.Context, cardID string) (*cardDTO.CardDT
 	return card, nil
 }
 
-func (im *impl) GetLatestCards(ctx context.Context) ([]*cardDTO.CardDTO, error) {
+func (im *cardImpl) GetLatestCards(ctx context.Context) ([]*cardDTO.CardDTO, error) {
 	logPos := "[card.service][GetLatestCards]"
 
 	cards, err := im.cardStore.GetLatestCards(ctx)
@@ -92,7 +92,7 @@ func (im *impl) GetLatestCards(ctx context.Context) ([]*cardDTO.CardDTO, error) 
 	return cards, nil
 }
 
-func (im *impl) SearchCard(ctx context.Context, keyword string) ([]*cardDTO.CardDTO, error) {
+func (im *cardImpl) SearchCard(ctx context.Context, keyword string) ([]*cardDTO.CardDTO, error) {
 	logPos := "[card.service][SearchCard]"
 
 	cards, err := im.cardStore.SearchCard(ctx, keyword, commonM.Active)

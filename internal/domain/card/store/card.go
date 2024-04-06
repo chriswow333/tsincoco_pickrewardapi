@@ -25,28 +25,26 @@ type CardStore interface {
 	SearchCard(ctx context.Context, keyword string, status commonM.Status) ([]*cardDTO.CardDTO, error)
 }
 
-type impl struct {
+type cardImpl struct {
 	dig.In
 
-	primary   *pgx.ConnPool
-	migration *pgx.ConnPool
+	primary *pgx.ConnPool
 }
 
-func New(sql *psql.Psql) CardStore {
+func NewCard(sql *psql.Psql) CardStore {
 	logPos := "[card.store][New]"
 
 	log.WithFields(log.Fields{
 		"pos": logPos,
 	}).Infof("init card store")
 
-	return &impl{
-		primary:   sql.Primary,
-		migration: sql.Migration,
+	return &cardImpl{
+		primary: sql.Primary,
 	}
 }
 
 const CARD = "card"
-const ALL_COLUMNS = " \"id\", \"name\", \"descriptions\",\"link_url\", " +
+const ALL_CARD_COLUMNS = " \"id\", \"name\", \"descriptions\",\"link_url\", " +
 	" \"bank_id\", \"order\", \"card_status\", \"create_date\", \"update_date\" "
 
 var MODIFIED_CARD_STAT = fmt.Sprintf(
@@ -55,10 +53,10 @@ var MODIFIED_CARD_STAT = fmt.Sprintf(
 		" ON CONFLICT(id) DO UPDATE SET  "+
 		" \"name\" = $10, \"descriptions\" = $11, \"link_url\" = $12, \"bank_id\" = $13, \"order\" = $14, "+
 		" \"card_status\" = $15 ,\"create_date\" = $16, \"update_date\" = $17 ",
-	CARD, ALL_COLUMNS,
+	CARD, ALL_CARD_COLUMNS,
 )
 
-func (im *impl) ModifiedCard(ctx context.Context, cardDTO *cardDTO.CardDTO) error {
+func (im *cardImpl) ModifiedCard(ctx context.Context, cardDTO *cardDTO.CardDTO) error {
 	logPos := "[card.store][ModifiedCard]"
 
 	tx, err := im.primary.Begin()
@@ -123,10 +121,10 @@ func (im *impl) ModifiedCard(ctx context.Context, cardDTO *cardDTO.CardDTO) erro
 var INSERT_CARD_STAT = fmt.Sprintf(
 	"INSERT INTO %s (%s) "+
 		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
-	CARD, ALL_COLUMNS,
+	CARD, ALL_CARD_COLUMNS,
 )
 
-func (im *impl) CreateCard(ctx context.Context, cardDTO *cardDTO.CardDTO) error {
+func (im *cardImpl) CreateCard(ctx context.Context, cardDTO *cardDTO.CardDTO) error {
 	logPos := "[card.store][CreateCard]"
 
 	tx, err := im.primary.Begin()
@@ -182,10 +180,10 @@ func (im *impl) CreateCard(ctx context.Context, cardDTO *cardDTO.CardDTO) error 
 var SELECT_CARD_BY_ID_STAT = fmt.Sprintf(
 	"SELECT %s "+
 		" FROM %s WHERE \"id\" = $1",
-	ALL_COLUMNS, CARD,
+	ALL_CARD_COLUMNS, CARD,
 )
 
-func (im *impl) GetByCardID(ctx context.Context, ID string) (*cardDTO.CardDTO, error) {
+func (im *cardImpl) GetByCardID(ctx context.Context, ID string) (*cardDTO.CardDTO, error) {
 	logPos := "[card.store][GetByCardID]"
 
 	var c *cardDTO.CardDTO
@@ -241,10 +239,10 @@ var SELECT_CARDS_BY_BANK_ID_STAT = fmt.Sprintf(
 	"SELECT %s FROM %s "+
 		" WHERE \"bank_id\" = $1 "+
 		" AND \"card_status\" = $2 ",
-	ALL_COLUMNS, CARD,
+	ALL_CARD_COLUMNS, CARD,
 )
 
-func (im *impl) GetCardsByBankID(ctx context.Context, bankID string, status commonM.Status) ([]*cardDTO.CardDTO, error) {
+func (im *cardImpl) GetCardsByBankID(ctx context.Context, bankID string, status commonM.Status) ([]*cardDTO.CardDTO, error) {
 	logPos := "[card.store][GetCardsByBankID]"
 
 	cardDTOs := []*cardDTO.CardDTO{}
@@ -289,10 +287,10 @@ func (im *impl) GetCardsByBankID(ctx context.Context, bankID string, status comm
 
 var SELECT_ALL_CARDS_STAT = fmt.Sprintf(
 	"SELECT %s FROM %s ",
-	ALL_COLUMNS, CARD,
+	ALL_CARD_COLUMNS, CARD,
 )
 
-func (im *impl) GetAllCards(ctx context.Context) ([]*cardDTO.CardDTO, error) {
+func (im *cardImpl) GetAllCards(ctx context.Context) ([]*cardDTO.CardDTO, error) {
 
 	logPos := "[card.store][GetAllCards]"
 
@@ -337,10 +335,10 @@ func (im *impl) GetAllCards(ctx context.Context) ([]*cardDTO.CardDTO, error) {
 var SELECT_LATEST_CARDS_STAT = fmt.Sprintf(
 	"SELECT %s FROM %s "+
 		" WHERE card_status = 2 order by update_date desc LIMIT 20 ",
-	ALL_COLUMNS, CARD,
+	ALL_CARD_COLUMNS, CARD,
 )
 
-func (im *impl) GetLatestCards(ctx context.Context) ([]*cardDTO.CardDTO, error) {
+func (im *cardImpl) GetLatestCards(ctx context.Context) ([]*cardDTO.CardDTO, error) {
 
 	logPos := "[card.store][GetLatestCards]"
 
@@ -390,10 +388,10 @@ var SELECT_CARDS_BY_KEYWORD_STAT = fmt.Sprintf(
 		" AND ( d ~~* $2 "+
 		" OR name ~~* $3) ",
 
-	ALL_COLUMNS, CARD,
+	ALL_CARD_COLUMNS, CARD,
 )
 
-func (im *impl) SearchCard(ctx context.Context, keyword string, status commonM.Status) ([]*cardDTO.CardDTO, error) {
+func (im *cardImpl) SearchCard(ctx context.Context, keyword string, status commonM.Status) ([]*cardDTO.CardDTO, error) {
 	logPos := "[card.store][GetLatestCards]"
 
 	cardDTOs := []*cardDTO.CardDTO{}

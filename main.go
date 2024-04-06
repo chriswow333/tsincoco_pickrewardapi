@@ -18,12 +18,12 @@ import (
 	psql "pickrewardapi/internal/pkg/postgres"
 
 	bankApplication "pickrewardapi/internal/application/bank/v1"
-	bankService "pickrewardapi/internal/domain/bank/service"
-	bankStore "pickrewardapi/internal/domain/bank/store"
 
 	cardApplication "pickrewardapi/internal/application/card/v1"
 	cardService "pickrewardapi/internal/domain/card/service"
 	cardStore "pickrewardapi/internal/domain/card/store"
+
+	cardRewardApplication "pickrewardapi/internal/application/card_reward/v1"
 
 	channelApplication "pickrewardapi/internal/application/channel/v1"
 	channelService "pickrewardapi/internal/domain/channel/service"
@@ -114,14 +114,23 @@ func buildContainer() *dig.Container {
 
 	container.Provide(psql.NewPsql)
 
-	container.Provide(bankService.New)
-	container.Provide(bankStore.New)
+	container.Provide(cardService.NewBank)
+	container.Provide(cardStore.NewBank)
 
-	container.Provide(cardService.New)
-	container.Provide(cardStore.New)
+	container.Provide(cardService.NewCard)
+	container.Provide(cardStore.NewCard)
 
-	container.Provide(channelService.New)
-	container.Provide(channelStore.New)
+	container.Provide(cardStore.NewCardReward)
+	container.Provide(cardService.NewCardReward)
+
+	container.Provide(cardService.NewFeedbackType)
+	container.Provide(cardStore.NewFeedbackType)
+
+	container.Provide(cardService.NewTaskLabel)
+	container.Provide(cardStore.NewTaskLabel)
+
+	container.Provide(channelService.NewChannel)
+	container.Provide(channelStore.NewChannel)
 
 	container.Provide(initGrpcServer)
 	return container
@@ -147,9 +156,10 @@ func parseUseTls() bool {
 }
 
 func initGrpcServer(
-	bankService bankService.BankService,
+	bankService cardService.BankService,
 	cardService cardService.CardService,
 	channelService channelService.ChannelService,
+	cardRewardService cardService.CardRewardService,
 
 ) *grpc.Server {
 	logPos := "[main][initGrpcServer]"
@@ -190,6 +200,7 @@ func initGrpcServer(
 
 	bankApplication.NewBankServer(s, bankService)
 	cardApplication.NewCardServer(s, cardService)
+	cardRewardApplication.NewCardRewardServer(s, cardRewardService)
 	channelApplication.NewChannelServer(s, channelService)
 
 	log.WithFields(log.Fields{

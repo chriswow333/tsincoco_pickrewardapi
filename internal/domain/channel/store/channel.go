@@ -23,28 +23,26 @@ type ChannelStore interface {
 	SearchChannel(ctx context.Context, keyword string, status commonM.Status) ([]*channelDTO.ChannelDTO, error)
 }
 
-type impl struct {
+type channelImpl struct {
 	dig.In
 
-	primary   *pgx.ConnPool
-	migration *pgx.ConnPool
+	primary *pgx.ConnPool
 }
 
-func New(sql *psql.Psql) ChannelStore {
+func NewChannel(sql *psql.Psql) ChannelStore {
 	logPos := "[channel.store][New]"
 
 	log.WithFields(log.Fields{
 		"pos": logPos,
 	}).Info("init channel store")
 
-	return &impl{
-		primary:   sql.Primary,
-		migration: sql.Migration,
+	return &channelImpl{
+		primary: sql.Primary,
 	}
 }
 
 const CHANNEL = "channel"
-const ALL_COLUMNS = " \"id\", \"name\", \"link_url\", \"channel_type\", \"create_date\", \"update_date\", " +
+const ALL_CAHNNEL_COLUMNS = " \"id\", \"name\", \"link_url\", \"channel_type\", \"create_date\", \"update_date\", " +
 	" \"channel_labels\", \"order\", \"channel_status\" "
 
 var MODIFIED_CHANNEL_STAT = fmt.Sprintf("INSERT INTO %s "+
@@ -54,9 +52,9 @@ var MODIFIED_CHANNEL_STAT = fmt.Sprintf("INSERT INTO %s "+
 	" \"name\" = $10, \"link_url\" = $11, \"channel_type\" = $12, "+
 	" \"create_date\" = $13, \"update_date\" = $14, "+
 	" \"channel_labels\" = $15, \"order\" = $16, "+
-	" \"channel_status\" = $17 ", CHANNEL, ALL_COLUMNS)
+	" \"channel_status\" = $17 ", CHANNEL, ALL_CAHNNEL_COLUMNS)
 
-func (im *impl) ModifiedChannel(ctx context.Context, channelDTO *channelDTO.ChannelDTO) error {
+func (im *channelImpl) ModifiedChannel(ctx context.Context, channelDTO *channelDTO.ChannelDTO) error {
 	logPos := "[channel.store][ModifiedChannel]"
 
 	tx, err := im.primary.Begin()
@@ -118,9 +116,9 @@ var SELECT_CHANNELS_BY_CHANNEL_TYPE_STAT = fmt.Sprintf("SELECT %s "+
 	" WHERE \"channel_type\" = $1 "+
 	" AND channel_status = $2 "+
 	" ORDER BY \"order\" "+
-	" LIMIT $3 OFFSET $4 ", ALL_COLUMNS, CHANNEL)
+	" LIMIT $3 OFFSET $4 ", ALL_CAHNNEL_COLUMNS, CHANNEL)
 
-func (im *impl) GetChannelsByType(ctx context.Context, ctype int32, status commonM.Status, limit, offset int32) ([]*channelDTO.ChannelDTO, error) {
+func (im *channelImpl) GetChannelsByType(ctx context.Context, ctype int32, status commonM.Status, limit, offset int32) ([]*channelDTO.ChannelDTO, error) {
 	logPos := "[channel.store][GetChannelsByType]"
 
 	channelDTOs := []*channelDTO.ChannelDTO{}
@@ -163,9 +161,9 @@ func (im *impl) GetChannelsByType(ctx context.Context, ctype int32, status commo
 }
 
 var SELECT_CHANNEL_BY_ID_STAT = fmt.Sprintf("SELECT %s "+
-	" FROM %s WHERE \"id\" = $1", ALL_COLUMNS, CHANNEL)
+	" FROM %s WHERE \"id\" = $1", ALL_CAHNNEL_COLUMNS, CHANNEL)
 
-func (im *impl) GetChannelByID(ctx context.Context, ID string) (*channelDTO.ChannelDTO, error) {
+func (im *channelImpl) GetChannelByID(ctx context.Context, ID string) (*channelDTO.ChannelDTO, error) {
 
 	logPos := "[channel.store][GetByChannelID]"
 
@@ -208,9 +206,9 @@ func (im *impl) GetChannelByID(ctx context.Context, ID string) (*channelDTO.Chan
 }
 
 var SELECT_CHANNELS_BY_IDs_STAT = fmt.Sprintf("SELECT %s "+
-	" FROM %s WHERE \"id\" = ANY($1) ", ALL_COLUMNS, CHANNEL)
+	" FROM %s WHERE \"id\" = ANY($1) ", ALL_CAHNNEL_COLUMNS, CHANNEL)
 
-func (im *impl) GetChannelByIDs(ctx context.Context, IDs []string) ([]*channelDTO.ChannelDTO, error) {
+func (im *channelImpl) GetChannelByIDs(ctx context.Context, IDs []string) ([]*channelDTO.ChannelDTO, error) {
 
 	logPos := "[channel.store][GetChannelByIDs]"
 
@@ -255,9 +253,9 @@ var SELECT_CHANNELS_BY_KEYWORD_STAT = fmt.Sprintf("SELECT %s "+
 	" FROM %s "+
 	" WHERE channel_status = $1 "+
 	" AND name ~~* $2 "+
-	" LIMIT 20 ", ALL_COLUMNS, CHANNEL)
+	" LIMIT 20 ", ALL_CAHNNEL_COLUMNS, CHANNEL)
 
-func (im *impl) SearchChannel(ctx context.Context, keyword string, status commonM.Status) ([]*channelDTO.ChannelDTO, error) {
+func (im *channelImpl) SearchChannel(ctx context.Context, keyword string, status commonM.Status) ([]*channelDTO.ChannelDTO, error) {
 	logPos := "[channel.store][SearchChannel]"
 
 	channelDTOs := []*channelDTO.ChannelDTO{}

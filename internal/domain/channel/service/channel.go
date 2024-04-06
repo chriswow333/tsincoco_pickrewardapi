@@ -25,7 +25,7 @@ type ChannelService interface {
 	GetChannelTypeByType(ctx context.Context, ctype int32) (*channelDTO.ChannelTypeDTO, error)
 }
 
-type impl struct {
+type channelImpl struct {
 	dig.In
 
 	channelStore channelStore.ChannelStore
@@ -35,18 +35,18 @@ var (
 	timeNow = time.Now
 )
 
-func New(
+func NewChannel(
 	channelStore channelStore.ChannelStore,
 ) ChannelService {
 
-	impl := &impl{
+	impl := &channelImpl{
 		channelStore: channelStore,
 	}
 
 	return impl
 }
 
-func (im *impl) GetChannelTypeByType(ctx context.Context, ctype int32) (*channelDTO.ChannelTypeDTO, error) {
+func (im *channelImpl) GetChannelTypeByType(ctx context.Context, ctype int32) (*channelDTO.ChannelTypeDTO, error) {
 	logPos := "[channel.service][GetChannelTypeByType]"
 
 	channelType := channelDomain.GetChannelType(channelDomain.ChannelTypeEnum(ctype))
@@ -64,7 +64,7 @@ func (im *impl) GetChannelTypeByType(ctx context.Context, ctype int32) (*channel
 	}, nil
 }
 
-func (im *impl) GetChannelTypes(ctx context.Context) []*channelDTO.ChannelTypeDTO {
+func (im *channelImpl) GetChannelTypes(ctx context.Context) []*channelDTO.ChannelTypeDTO {
 
 	channelCategoryDTOs := []*channelDTO.ChannelTypeDTO{}
 
@@ -82,7 +82,7 @@ func (im *impl) GetChannelTypes(ctx context.Context) []*channelDTO.ChannelTypeDT
 	return channelCategoryDTOs
 }
 
-func (im *impl) GetChannelsByType(ctx context.Context, channelType int32, limit, offset int32) ([]*channelDTO.ChannelDTO, error) {
+func (im *channelImpl) GetChannelsByType(ctx context.Context, channelType int32, limit, offset int32) ([]*channelDTO.ChannelDTO, error) {
 	logPos := "[channel.service][GetChannelsByType]"
 
 	channelDTOs, err := im.channelStore.GetChannelsByType(ctx, channelType, commonM.Active, limit, offset)
@@ -101,11 +101,11 @@ func (im *impl) GetChannelsByType(ctx context.Context, channelType int32, limit,
 	return channelDTOs, nil
 }
 
-func (im *impl) GetByChannelID(ctx context.Context, ID string) (*channelDTO.ChannelDTO, error) {
+func (im *channelImpl) GetByChannelID(ctx context.Context, ID string) (*channelDTO.ChannelDTO, error) {
 	return im.channelStore.GetChannelByID(ctx, ID)
 }
 
-func (im *impl) GetsByChannelIDs(ctx context.Context, IDs []string) ([]*channelDTO.ChannelDTO, error) {
+func (im *channelImpl) GetsByChannelIDs(ctx context.Context, IDs []string) ([]*channelDTO.ChannelDTO, error) {
 	logPos := "[channel.service][GetsByChannelIDs]"
 
 	channelDTOs, err := im.channelStore.GetChannelByIDs(ctx, IDs)
@@ -124,7 +124,7 @@ func (im *impl) GetsByChannelIDs(ctx context.Context, IDs []string) ([]*channelD
 	return channelDTOs, nil
 }
 
-func (im *impl) SearchChannel(ctx context.Context, keyword string) ([]*channelDTO.ChannelDTO, error) {
+func (im *channelImpl) SearchChannel(ctx context.Context, keyword string) ([]*channelDTO.ChannelDTO, error) {
 	logPos := "[channel.service][SearchChannel]"
 
 	channelDTOs, err := im.channelStore.SearchChannel(ctx, keyword, commonM.Active)

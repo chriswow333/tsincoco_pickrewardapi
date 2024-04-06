@@ -4,36 +4,36 @@ import (
 	"context"
 	"errors"
 
-	channelDTO "pickrewardapi/internal/domain/channel_label/dto"
-	channelLabelStore "pickrewardapi/internal/domain/channel_label/store"
+	channelDTO "pickrewardapi/internal/domain/channel/dto"
+	channelLabelStore "pickrewardapi/internal/domain/channel/store"
 
 	log "github.com/sirupsen/logrus"
 	"go.uber.org/dig"
 )
 
-type ChannelLabelAppService interface {
+type ChannelLabelService interface {
 	GetShowChannelLabels(ctx context.Context) ([]*channelDTO.ChannelLabelDTO, error)
 }
 
-type impl struct {
+type channelLabelImpl struct {
 	dig.In
 
 	channelLabelStore channelLabelStore.ChannelLabelStore
 }
 
-func New(
+func NewChannelLabel(
 	channelLabelStore channelLabelStore.ChannelLabelStore,
-) ChannelLabelAppService {
+) ChannelLabelService {
 
-	impl := &impl{
+	impl := &channelLabelImpl{
 		channelLabelStore: channelLabelStore,
 	}
 
 	return impl
 }
 
-func (im *impl) GetShowChannelLabels(ctx context.Context) ([]*channelDTO.ChannelLabelDTO, error) {
-	logPos := "[channel_label.app.service][GetShowChannelLabels]"
+func (im *channelLabelImpl) GetShowChannelLabels(ctx context.Context) ([]*channelDTO.ChannelLabelDTO, error) {
+	logPos := "[channellabel.service][GetShowChannelLabels]"
 
 	channelLabels, err := im.channelLabelStore.GetAllChannelLabels(ctx)
 	if err != nil {
