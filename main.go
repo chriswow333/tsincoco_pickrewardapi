@@ -28,6 +28,10 @@ import (
 	channelApplication "pickrewardapi/internal/application/channel/v1"
 	channelService "pickrewardapi/internal/domain/channel/service"
 	channelStore "pickrewardapi/internal/domain/channel/store"
+
+	payApplication "pickrewardapi/internal/application/pay/v1"
+	payService "pickrewardapi/internal/domain/pay/service"
+	payStore "pickrewardapi/internal/domain/pay/store"
 )
 
 func loadEnvFromFile(filePath string) error {
@@ -114,6 +118,9 @@ func buildContainer() *dig.Container {
 
 	container.Provide(psql.NewPsql)
 
+	container.Provide(payService.NewPay)
+	container.Provide(payStore.NewPay)
+
 	container.Provide(cardService.NewBank)
 	container.Provide(cardStore.NewBank)
 
@@ -160,6 +167,7 @@ func initGrpcServer(
 	cardService cardService.CardService,
 	channelService channelService.ChannelService,
 	cardRewardService cardService.CardRewardService,
+	payService payService.PayService,
 
 ) *grpc.Server {
 	logPos := "[main][initGrpcServer]"
@@ -202,6 +210,7 @@ func initGrpcServer(
 	cardApplication.NewCardServer(s, cardService)
 	cardRewardApplication.NewCardRewardServer(s, cardRewardService)
 	channelApplication.NewChannelServer(s, channelService)
+	payApplication.NewPayServer(s, payService)
 
 	log.WithFields(log.Fields{
 		"pos": logPos,

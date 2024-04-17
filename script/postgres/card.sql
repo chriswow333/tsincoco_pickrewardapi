@@ -10,5 +10,5 @@ create table card (
 		"order" INT,
 		"card_status" INT,
 		"create_date" BIGINT,
-		"update_date" BIGINT,
+		"update_date" BIGINT
 );

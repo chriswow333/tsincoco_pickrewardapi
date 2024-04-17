@@ -1,6 +1,6 @@
 
-DROP TABLE  IF EXISTS feedback_type;
-create table feedback_type (
+DROP TABLE  IF EXISTS evaluation;
+create table evaluation (
     "id" VARCHAR(36) PRIMARY KEY,
 	  "name" VARCHAR(100),
     "feedback_type" INT,

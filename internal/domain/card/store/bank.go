@@ -200,8 +200,12 @@ func (im *bankImpl) GetAllBanks(ctx context.Context, status commonM.Status) ([]*
 	return bankDTOs, nil
 }
 
-const SELECT_BANK_NAME_BY_ID_STAT = "SELECT \"id\", \"name\" " +
-	" FROM bank WHERE \"id\" = $1 "
+var SELECT_BANK_NAME_BY_ID_STAT = fmt.Sprintf(
+	"SELECT \"id\", \"name\" FROM %s "+
+		" WHERE bank_status = $1 "+
+		" ORDER BY \"order\" ",
+	BANK,
+)
 
 func (im *bankImpl) GetBankNameByBankID(ctx context.Context, ID string) (*cardDTO.BankDTO, error) {
 	logPos := "[bank.store][GetBankNameByBankID]"
@@ -217,7 +221,8 @@ func (im *bankImpl) GetBankNameByBankID(ctx context.Context, ID string) (*cardDT
 
 	var bankResult *cardDTO.BankDTO
 	defer rows.Close()
-	for rows.Next() {
+
+	if rows.Next() {
 
 		bankResult := &cardDTO.BankDTO{}
 		selector := []interface{}{
@@ -241,10 +246,13 @@ func (im *bankImpl) GetBankNameByBankID(ctx context.Context, ID string) (*cardDT
 			return nil, errors.New("there have more than one record")
 		}
 
+	} else {
+		log.WithFields(log.Fields{
+			"pos":     logPos,
+			"bank.ID": ID,
+		}).Info("no bank found with the given ID")
+		return nil, errors.New("no bank found with the given ID")
 	}
 
-	if bankResult == nil {
-		return nil, errors.New("not found bank")
-	}
 	return bankResult, nil
 }
