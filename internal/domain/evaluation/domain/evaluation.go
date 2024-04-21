@@ -6,24 +6,15 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"pickrewardapi/internal/domain/evaluation/domain/event"
-	rewardDTO "pickrewardapi/internal/domain/reward/dto"
 	commonM "pickrewardapi/internal/shared/common/model"
-)
-
-type Owner int32
-
-const (
-	CardReward Owner = iota
-	Pay
-	Channel
 )
 
 type Evaluation struct {
 	ID string
 
-	Reward *rewardDTO.RewardDTO
+	FeedbackID   string
+	FeedbackType int32
 
-	Owner   Owner
 	OwnerID string
 
 	CreateDate int64
@@ -82,7 +73,7 @@ func (eva *Evaluation) calculateFeedbackEventResult(payloadEventResult *event.Pa
 
 	if eva.Payload.PayloadType == ContainerPayloadType {
 		return &event.FeedbackEventResult{
-			RewardType:                payloadEventResult.FeedbackEventResult.RewardType,
+			FeedbackID:                payloadEventResult.FeedbackEventResult.FeedbackID,
 			CalculateType:             payloadEventResult.FeedbackEventResult.CalculateType,
 			Cost:                      payloadEventResult.FeedbackEventResult.Cost,
 			GetReturn:                 payloadEventResult.FeedbackEventResult.GetReturn,
@@ -120,12 +111,12 @@ func (eva *Evaluation) calculateFeedbackEventResult(payloadEventResult *event.Pa
 func (eva *Evaluation) maxAndCalculator(payloadEventResult *event.PayloadEventResult) *event.FeedbackEventResult {
 
 	noneFeedbackEventResult := &event.FeedbackEventResult{
-		RewardType:                eva.Reward.RewardType,
+		FeedbackID:                eva.FeedbackID,
 		FeedbackEventResultStatus: event.GetNone,
 	}
 
 	maxFeedbackEventResult := &event.FeedbackEventResult{
-		RewardType:                eva.Reward.RewardType,
+		FeedbackID:                eva.FeedbackID,
 		FeedbackEventResultStatus: event.GetNone,
 	}
 
@@ -138,7 +129,7 @@ func (eva *Evaluation) maxAndCalculator(payloadEventResult *event.PayloadEventRe
 
 		if maxFeedbackEventResult.GetReturn < p.FeedbackEventResult.GetReturn {
 			maxFeedbackEventResult = &event.FeedbackEventResult{
-				RewardType:                eva.Reward.RewardType,
+				FeedbackID:                eva.FeedbackID,
 				CalculateType:             p.FeedbackEventResult.CalculateType,
 				Cost:                      p.FeedbackEventResult.Cost,
 				GetReturn:                 p.FeedbackEventResult.GetReturn,
@@ -154,7 +145,7 @@ func (eva *Evaluation) maxAndCalculator(payloadEventResult *event.PayloadEventRe
 func (eva *Evaluation) maxOrCalculator(payloadEventResult *event.PayloadEventResult) *event.FeedbackEventResult {
 
 	maxFeedbackEventResult := &event.FeedbackEventResult{
-		RewardType:                eva.Reward.RewardType,
+		FeedbackID:                eva.FeedbackID,
 		FeedbackEventResultStatus: event.GetNone,
 	}
 
@@ -162,7 +153,7 @@ func (eva *Evaluation) maxOrCalculator(payloadEventResult *event.PayloadEventRes
 
 		if maxFeedbackEventResult.GetReturn < p.FeedbackEventResult.GetReturn {
 			maxFeedbackEventResult = &event.FeedbackEventResult{
-				RewardType:                eva.Reward.RewardType,
+				FeedbackID:                eva.FeedbackID,
 				CalculateType:             p.FeedbackEventResult.CalculateType,
 				Cost:                      p.FeedbackEventResult.Cost,
 				GetReturn:                 p.FeedbackEventResult.GetReturn,
@@ -178,13 +169,13 @@ func (eva *Evaluation) maxOrCalculator(payloadEventResult *event.PayloadEventRes
 func (eva *Evaluation) xorCalculator(payloadEventResult *event.PayloadEventResult) *event.FeedbackEventResult {
 
 	noneFeedbackEventResult := &event.FeedbackEventResult{
-		RewardType:                eva.Reward.RewardType,
+		FeedbackID:                eva.FeedbackID,
 		FeedbackEventResultStatus: event.GetNone,
 	}
 	pass := false
 
 	feedbackEventResult := &event.FeedbackEventResult{
-		RewardType:                eva.Reward.RewardType,
+		FeedbackID:                eva.FeedbackID,
 		FeedbackEventResultStatus: event.GetNone,
 	}
 
@@ -202,7 +193,7 @@ func (eva *Evaluation) xorCalculator(payloadEventResult *event.PayloadEventResul
 		pass = true
 
 		feedbackEventResult = &event.FeedbackEventResult{
-			RewardType:                eva.Reward.RewardType,
+			FeedbackID:                eva.FeedbackID,
 			CalculateType:             p.FeedbackEventResult.CalculateType,
 			Cost:                      p.FeedbackEventResult.Cost,
 			GetReturn:                 p.FeedbackEventResult.GetReturn,
@@ -217,7 +208,7 @@ func (eva *Evaluation) xorCalculator(payloadEventResult *event.PayloadEventResul
 func (eva *Evaluation) addCalculator(payloadEventResult *event.PayloadEventResult) *event.FeedbackEventResult {
 
 	addFeedbackEventResult := &event.FeedbackEventResult{
-		RewardType:                eva.Reward.RewardType,
+		FeedbackID:                eva.FeedbackID,
 		FeedbackEventResultStatus: event.GetNone,
 	}
 
@@ -243,7 +234,7 @@ func (eva *Evaluation) addCalculator(payloadEventResult *event.PayloadEventResul
 func (eva *Evaluation) areaCalculator(payloadEventResult *event.PayloadEventResult) *event.FeedbackEventResult {
 
 	areaFeedbackEventResult := &event.FeedbackEventResult{
-		RewardType:                eva.Reward.RewardType,
+		FeedbackID:                eva.FeedbackID,
 		FeedbackEventResultStatus: event.GetNone,
 	}
 

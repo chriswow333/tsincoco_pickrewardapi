@@ -22,6 +22,8 @@ type ChannelService interface {
 	GetsByChannelIDs(ctx context.Context, IDs []string) ([]*channelDTO.ChannelDTO, error)
 	SearchChannel(ctx context.Context, keyword string) ([]*channelDTO.ChannelDTO, error)
 
+	GetByChannelID(ctx context.Context, ID string) (*channelDTO.ChannelDTO, error)
+
 	GetChannelTypeByType(ctx context.Context, ctype int32) (*channelDTO.ChannelTypeDTO, error)
 }
 

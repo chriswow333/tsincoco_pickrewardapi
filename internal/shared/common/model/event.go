@@ -12,8 +12,8 @@ type Event struct {
 }
 
 type CardEvent struct {
-	RewardType int32          `json:"rewardType"`
-	TaskLabels map[int32]bool `json:"taskLabels"`
+	FeedbackType int32          `json:"feedbackType"`
+	TaskLabels   map[int32]bool `json:"taskLabels"`
 }
 
 type PayStatus int32

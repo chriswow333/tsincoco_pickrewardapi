@@ -1,4 +1,4 @@
-package transfer
+package handler
 
 import (
 	"context"
@@ -6,12 +6,58 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	domain "pickrewardapi/internal/app/evaluation/domain"
-	evaluationDTO "pickrewardapi/internal/app/evaluation/dto"
+	domain "pickrewardapi/internal/domain/evaluation/domain"
+	evaluationDTO "pickrewardapi/internal/domain/evaluation/dto"
+
+	channelService "pickrewardapi/internal/domain/channel/service"
 )
 
-func (im *impl) transferToPayload(ctx context.Context, payloadDTO *evaluationDTO.PayloadDTO) (*domain.Payload, error) {
-	logPos := "[evaluation.app.transfer][transferToPayload]"
+type Transfer struct {
+	channelService channelService.ChannelService
+}
+
+func NewTransfer(
+	channelService channelService.ChannelService,
+) *Transfer {
+	return &Transfer{
+		channelService: channelService,
+	}
+}
+
+func (t *Transfer) TransferToEvaluation(ctx context.Context, evaluationDTO *evaluationDTO.EvaluationDTO) (*domain.Evaluation, error) {
+	logPos := "[evaluation.transfer][TransferToEvaluation]"
+
+	log.WithFields(log.Fields{
+		"pos":           logPos,
+		"evaluation.ID": evaluationDTO.ID,
+	}).Info("loading evaluation")
+
+	payload, err := t.transferToPayload(ctx, evaluationDTO.Payload)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"pos":           logPos,
+			"evaluation.ID": evaluationDTO.ID,
+		}).Error("transferToPayload failed", err)
+		return nil, err
+	}
+
+	evaluation := &domain.Evaluation{
+		ID:         evaluationDTO.ID,
+		CreateDate: evaluationDTO.CreateDate,
+		UpdateDate: evaluationDTO.UpdateDate,
+		StartDate:  evaluationDTO.StartDate,
+		EndDate:    evaluationDTO.EndDate,
+		FeedbackID: evaluationDTO.FeedbackID,
+		OwnerID:    evaluationDTO.OwnerID,
+		Payload:    payload,
+	}
+
+	return evaluation, nil
+
+}
+
+func (t *Transfer) transferToPayload(ctx context.Context, payloadDTO *evaluationDTO.PayloadDTO) (*domain.Payload, error) {
+	logPos := "[evaluation.transfer][transferToPayload]"
 
 	if payloadDTO == nil {
 		return nil, nil
@@ -29,7 +75,7 @@ func (im *impl) transferToPayload(ctx context.Context, payloadDTO *evaluationDTO
 		}
 
 		for _, p := range payloadDTO.Payloads {
-			payload, err := im.transferToPayload(ctx, p)
+			payload, err := t.transferToPayload(ctx, p)
 			if err != nil {
 				log.WithFields(log.Fields{
 					"pos":        logPos,
@@ -51,7 +97,7 @@ func (im *impl) transferToPayload(ctx context.Context, payloadDTO *evaluationDTO
 		}, nil
 	}
 
-	container, err := im.transferToContainer(ctx, payloadDTO.Container)
+	container, err := t.transferToContainer(ctx, payloadDTO.Container)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"pos":        logPos,
@@ -64,20 +110,20 @@ func (im *impl) transferToPayload(ctx context.Context, payloadDTO *evaluationDTO
 		ID:              payloadDTO.ID,
 		PayloadOperator: domain.PayloadOperator(payloadDTO.PayloadOperator),
 		PayloadType:     domain.PayloadType(payloadDTO.PayloadType),
-		Feedback:        im.transferToFeedback(payloadDTO.Feedback),
+		Feedback:        t.transferToFeedback(payloadDTO.Feedback),
 		Container:       container,
 	}
 
 	return payload, nil
 }
 
-func (im *impl) transferToFeedback(dto *evaluationDTO.FeedbackDTO) *domain.Feedback {
+func (t *Transfer) transferToFeedback(dto *evaluationDTO.FeedbackDTO) *domain.Feedback {
 
 	if dto == nil {
 		return nil
 	}
 	return &domain.Feedback{
-		RewardType:    dto.RewardType,
+		FeedbackID:    dto.FeedbackID,
 		CalculateType: domain.CalculateType(dto.CalculateType),
 		MinCost:       dto.MinCost,
 		Fixed:         dto.Fixed,
@@ -86,8 +132,8 @@ func (im *impl) transferToFeedback(dto *evaluationDTO.FeedbackDTO) *domain.Feedb
 	}
 }
 
-func (im *impl) transferToContainer(ctx context.Context, containerDTO *evaluationDTO.ContainerDTO) (*domain.Container, error) {
-	logPos := "[evaluation.app.transfer][transferToContainer]"
+func (t *Transfer) transferToContainer(ctx context.Context, containerDTO *evaluationDTO.ContainerDTO) (*domain.Container, error) {
+	logPos := "[evaluation.transfer][transferToContainer]"
 	containerID := containerDTO.ID
 
 	containers := []*domain.Container{}
@@ -103,7 +149,7 @@ func (im *impl) transferToContainer(ctx context.Context, containerDTO *evaluatio
 		}
 
 		for _, c := range containerDTO.Containers {
-			val, err := im.transferToContainer(ctx, c)
+			val, err := t.transferToContainer(ctx, c)
 			if err != nil {
 				log.WithFields(log.Fields{
 					"pos":          logPos,
@@ -124,7 +170,7 @@ func (im *impl) transferToContainer(ctx context.Context, containerDTO *evaluatio
 
 	var err error
 
-	channelEvaluationDTOs, err := im.transferChannelEvaluationDTOs(ctx, containerDTO)
+	channelEvaluationDTOs, err := t.transferChannelEvaluationDTOs(ctx, containerDTO)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"pos":          logPos,
@@ -133,7 +179,7 @@ func (im *impl) transferToContainer(ctx context.Context, containerDTO *evaluatio
 		return nil, err
 	}
 
-	constraints, err := im.transferToConstraint(containerDTO)
+	constraints, err := transferToConstraint(containerDTO)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"pos":          logPos,
@@ -156,7 +202,7 @@ func (im *impl) transferToContainer(ctx context.Context, containerDTO *evaluatio
 	return container, nil
 }
 
-func (im *impl) transferChannelEvaluationDTOs(ctx context.Context, containerDTO *evaluationDTO.ContainerDTO) ([]*evaluationDTO.ChannelEvaluationDTO, error) {
+func (t *Transfer) transferChannelEvaluationDTOs(ctx context.Context, containerDTO *evaluationDTO.ContainerDTO) ([]*evaluationDTO.ChannelEvaluationDTO, error) {
 	logPos := "[evaluation.app.transfer][transferChannel]"
 
 	if containerDTO.ContainerType == int32(domain.ChannelContainer) {
@@ -171,7 +217,7 @@ func (im *impl) transferChannelEvaluationDTOs(ctx context.Context, containerDTO 
 		}
 
 		for _, ch := range containerDTO.ChannelIDs {
-			channel, err := im.channelAppService.GetByChannelID(ctx, ch)
+			channel, err := t.channelService.GetByChannelID(ctx, ch)
 			if err != nil {
 				log.WithFields(log.Fields{
 					"pos":        logPos,
@@ -179,14 +225,10 @@ func (im *impl) transferChannelEvaluationDTOs(ctx context.Context, containerDTO 
 				}).Error("channelAppService.GetByChannelID failed", err)
 				return nil, err
 			}
-			channelLabels := []int32{}
-			for _, cl := range channel.ChannelLabels {
-				channelLabels = append(channelLabels, cl.Label)
-			}
 
 			channelEvaluationDTOs = append(channelEvaluationDTOs, &evaluationDTO.ChannelEvaluationDTO{
 				ID:            channel.ID,
-				ChannelLabels: channelLabels,
+				ChannelLabels: channel.ChannelLabels,
 			})
 		}
 		return channelEvaluationDTOs, nil
@@ -195,7 +237,7 @@ func (im *impl) transferChannelEvaluationDTOs(ctx context.Context, containerDTO 
 	return nil, nil
 }
 
-func (im *impl) transferToConstraint(containerDTO *evaluationDTO.ContainerDTO) ([]*domain.Constraint, error) {
+func transferToConstraint(containerDTO *evaluationDTO.ContainerDTO) ([]*domain.Constraint, error) {
 	logPos := "[evaluation.app.transfer][transferToConstraint]"
 
 	if containerDTO.ContainerType != int32(domain.ConstraintContainer) {
@@ -207,8 +249,8 @@ func (im *impl) transferToConstraint(containerDTO *evaluationDTO.ContainerDTO) (
 		log.WithFields(log.Fields{
 			"pos":          logPos,
 			"container.ID": containerDTO.ID,
-		}).Error("constraints is nil")
-		return nil, errors.New("constraints is nil")
+		}).Error("constraints are nil")
+		return nil, errors.New("constraints are nil")
 	}
 
 	for _, c := range containerDTO.Constraints {

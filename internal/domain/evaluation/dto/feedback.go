@@ -7,7 +7,7 @@ import (
 )
 
 type FeedbackDTO struct {
-	RewardType    int32   `bson:"reward_type" json:"rewardType"`
+	FeedbackID    string  `bson:"feedback_id" json:"feedbackID"`
 	CalculateType int32   `bson:"calculate_type" json:"calculateType"`
 	MinCost       int32   `bson:"min_cost" json:"minCost"`
 	Fixed         int32   `bson:"fixed" json:"fixed"`
@@ -33,7 +33,7 @@ func (a *FeedbackDTO) Scan(value interface{}) error {
 }
 
 type FeedbackEventResultDTO struct {
-	RewardType                int32   `bson:"reward_type" json:"rewardType"`
+	FeedbackID                string  `bson:"feedback_id" json:"feedbackID"`
 	CalculateType             int32   `bson:"calculate_type" json:"calculateType"`
 	Cost                      int32   `bson:"cost" json:"cost"`
 	GetReturn                 float64 `bson:"get_return" json:"getReturn"`

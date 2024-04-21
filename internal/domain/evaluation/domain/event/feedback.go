@@ -9,7 +9,7 @@ const (
 )
 
 type FeedbackEventResult struct {
-	RewardType                int32                     `json:"rewardType"` // CASH, LINE POINT...
+	FeedbackID                string                    `json:"feedbackID"`
 	CalculateType             int32                     `json:"calculateType"`
 	Cost                      int32                     `json:"cost"`          // 花費多少
 	GetReturn                 float64                   `json:"getReturn"`     // 回饋多少

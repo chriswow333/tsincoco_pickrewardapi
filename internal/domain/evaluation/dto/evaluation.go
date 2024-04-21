@@ -8,7 +8,6 @@ import (
 
 type EvaluationDTO struct {
 	ID        string `json:"id"`
-	Owner     int32  `json:"owner"`
 	OwnerID   string `json:"ownerID"`
 	StartDate int64  `json:"startDate"`
 	EndDate   int64  `json:"endDate"`

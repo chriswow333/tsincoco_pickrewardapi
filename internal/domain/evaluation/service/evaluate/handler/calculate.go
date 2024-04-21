@@ -1,12 +1,13 @@
-package service
+package handler
 
 import (
-	domain "pickrewardapi/internal/app/evaluation/domain"
-	event "pickrewardapi/internal/app/evaluation/domain/event"
-	evaluationDTO "pickrewardapi/internal/app/evaluation/dto"
+	domain "pickrewardapi/internal/domain/evaluation/domain"
+	evaluationDTO "pickrewardapi/internal/domain/evaluation/dto"
+
+	event "pickrewardapi/internal/domain/evaluation/domain/event"
 )
 
-func calculateEvaluationResult(eventResult *event.EvaluationEventResult) *evaluationDTO.EvaluationEventResultRespDTO {
+func CalculateEvaluationResult(eventResult *event.EvaluationEventResult) *evaluationDTO.EvaluationEventResultRespDTO {
 
 	evaluationEventResultResp := &evaluationDTO.EvaluationEventResultRespDTO{
 		CardRewardTaskLabelMatched: []string{},
@@ -42,7 +43,7 @@ func calculateEvaluationResult(eventResult *event.EvaluationEventResult) *evalua
 
 	evaluationEventResultResp.ID = eventResult.ID
 	evaluationEventResultResp.FeedbackEventResultResp = &evaluationDTO.FeedbackEventResultDTO{
-		RewardType:                eventResult.FeedbackEventResult.RewardType,
+		FeedbackID:                eventResult.FeedbackEventResult.FeedbackID,
 		CalculateType:             eventResult.FeedbackEventResult.CalculateType,
 		Cost:                      eventResult.FeedbackEventResult.Cost,
 		GetReturn:                 eventResult.FeedbackEventResult.GetReturn,

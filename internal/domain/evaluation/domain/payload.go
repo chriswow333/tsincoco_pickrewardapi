@@ -82,7 +82,7 @@ func (p *Payload) judgeContainer(e *commonM.Event) (*event.PayloadEventResult, e
 
 	} else {
 		feedbackEvent = &event.FeedbackEventResult{
-			RewardType:                p.Feedback.RewardType,
+			FeedbackID:                p.Feedback.FeedbackID,
 			Cost:                      e.Cost,
 			FeedbackEventResultStatus: event.GetNone,
 		}
@@ -133,7 +133,6 @@ func (p *Payload) judgePayload(e *commonM.Event) (*event.PayloadEventResult, err
 }
 
 func (p *Payload) operate(e *commonM.Event, payloadEvents []*event.PayloadEventResult) (*event.PayloadEventResult, error) {
-
 	logPos := "[reward.domain][Payload.calculatePayloadEvents]"
 
 	logFields := log.Fields{
@@ -303,7 +302,6 @@ func (p *Payload) calculateFeedbackResult(e *commonM.Event) (*event.FeedbackEven
 	if e.Cost < p.Feedback.MinCost {
 		return &event.FeedbackEventResult{
 			CalculateType:             int32(p.Feedback.CalculateType),
-			RewardType:                p.Feedback.RewardType,
 			Cost:                      e.Cost,
 			FeedbackEventResultStatus: event.GetNone,
 			GetPercentage:             0,
@@ -315,7 +313,6 @@ func (p *Payload) calculateFeedbackResult(e *commonM.Event) (*event.FeedbackEven
 	case Multiply:
 		feedbackEvent := multiply(p.Feedback, e)
 		feedbackEvent.Cost = e.Cost
-		feedbackEvent.RewardType = p.Feedback.RewardType
 		feedbackEvent.GetPercentage = p.Feedback.Percentage
 		feedbackEvent.CalculateType = int32(p.Feedback.CalculateType)
 		return feedbackEvent, nil
@@ -323,14 +320,12 @@ func (p *Payload) calculateFeedbackResult(e *commonM.Event) (*event.FeedbackEven
 	case Fixed:
 		feedbackEvent := fixed(p.Feedback)
 		feedbackEvent.Cost = e.Cost
-		feedbackEvent.RewardType = p.Feedback.RewardType
 		feedbackEvent.CalculateType = int32(p.Feedback.CalculateType)
 		return feedbackEvent, nil
 
 	case Area:
 		feedbackEvent := area(p.Feedback, e)
 		feedbackEvent.Cost = e.Cost
-		feedbackEvent.RewardType = p.Feedback.RewardType
 		feedbackEvent.CalculateType = int32(p.Feedback.CalculateType)
 
 		return feedbackEvent, nil

@@ -1,7 +1,7 @@
 package domain
 
 type Feedback struct {
-	RewardType    int32 // CASH, POINT
+	FeedbackID    string // CASH, POINT
 	CalculateType CalculateType
 	MinCost       int32   // 最少要花多少錢
 	Fixed         int32   // 折抵多少元/點
