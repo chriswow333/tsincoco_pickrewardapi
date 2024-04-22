@@ -1,12 +1,9 @@
 package domain
 
 import (
-	"strconv"
-
 	log "github.com/sirupsen/logrus"
 
 	"pickrewardapi/internal/domain/evaluation/domain/event"
-	"pickrewardapi/internal/domain/evaluation/dto"
 	commonM "pickrewardapi/internal/shared/common/model"
 )
 
@@ -21,12 +18,12 @@ const (
 type ContainerType int32
 
 const (
-	InnerContainer ContainerType = iota
-	ConstraintContainer
-	CardRewardTaskLabelContainer
-	ChannelContainer
-	PayContainer
-	ChannelLabelContainer
+	InnerContainerType ContainerType = iota
+	ConstraintContainerType
+	TaskLabelContainerType
+	ChannelContainerType
+	PayContainerType
+	ChannelLabelContainerType
 )
 
 type Container struct {
@@ -34,14 +31,12 @@ type Container struct {
 	ContainerOperator ContainerOperator
 	ContainerType     ContainerType
 	InnerContainers   []*Container
-	Constraints       []*Constraint
 
-	CardRewardTaskLabels []int32
-
-	ChannelEvaluations []*dto.ChannelEvaluationDTO
-	PayEvaluations     []string
-
-	ChannelLabelEvaluations []int32
+	ConstraintContainers   []*ConstraintContainer
+	TaskLabelContainers    []string
+	ChannelContainers      []*ChannelContainer
+	PayContainers          []string
+	ChannelLabelContainers []string
 }
 
 func (c *Container) Satisfy(e *commonM.Event) *event.ContainerEventResult {
@@ -53,17 +48,17 @@ func (c *Container) Satisfy(e *commonM.Event) *event.ContainerEventResult {
 		EventID:       e.ID,
 	}
 	switch c.ContainerType {
-	case InnerContainer:
+	case InnerContainerType:
 		c.satisfyInnerContainer(e, containerEventResult)
-	case CardRewardTaskLabelContainer:
+	case TaskLabelContainerType:
 		c.satisfyCardRewardTaskLabel(e, containerEventResult)
-	case ChannelContainer:
+	case ChannelContainerType:
 		c.satisfyChannel(e, containerEventResult)
-	case PayContainer:
+	case PayContainerType:
 		c.satisfyPay(e, containerEventResult)
-	case ChannelLabelContainer:
+	case ChannelLabelContainerType:
 		c.satisfyChannelLabel(e, containerEventResult)
-	case ConstraintContainer:
+	case ConstraintContainerType:
 		c.satisfyConstraint(e, containerEventResult)
 	}
 
@@ -90,7 +85,7 @@ func (c *Container) satisfyConstraint(e *commonM.Event, containerEventResult *ev
 		"container.mismatch": containerEventResult.MisMatches,
 	}).Info("in.satisfyLabel done")
 
-	for _, cs := range c.Constraints {
+	for _, cs := range c.ConstraintContainers {
 		cs.Satisfy(e, containerEventResult)
 	}
 
@@ -115,14 +110,14 @@ func (c *Container) satisfyChannelLabel(e *commonM.Event, containerEventResult *
 	matchesMapper := make(map[string]bool)
 	misMatchesMapper := make(map[string]bool)
 
-	for _, l := range c.ChannelLabelEvaluations {
+	for _, l := range c.ChannelLabelContainers {
 
 		match := false
 		if _, ok := e.ChannelEvent.ChannelLabels[l]; ok {
-			matchesMapper[strconv.FormatInt(int64(l), 10)] = true
+			matchesMapper[l] = true
 			match = true
 		} else {
-			misMatchesMapper[strconv.FormatInt(int64(l), 10)] = true
+			misMatchesMapper[l] = true
 		}
 
 		if match {
@@ -131,11 +126,11 @@ func (c *Container) satisfyChannelLabel(e *commonM.Event, containerEventResult *
 
 		for _, ec := range e.ChannelEvent.ChannelIDs {
 			if _, ok := ec.ChannelLabels[l]; ok {
-				matchesMapper[strconv.FormatInt(int64(l), 10)] = true
+				matchesMapper[l] = true
 				match = true
 				break
 			} else {
-				misMatchesMapper[strconv.FormatInt(int64(l), 10)] = true
+				misMatchesMapper[l] = true
 			}
 		}
 	}
@@ -170,7 +165,7 @@ func (c *Container) satisfyPay(e *commonM.Event, containerEventResult *event.Con
 	matches := []string{}
 	misMatches := []string{}
 
-	for _, p := range c.PayEvaluations {
+	for _, p := range c.PayContainers {
 		if e.PayEvent == nil {
 			misMatches = append(misMatches, p)
 			continue
@@ -200,16 +195,16 @@ func (c *Container) satisfyChannel(e *commonM.Event, containerEventResult *event
 	matches := []string{}
 	misMatches := []string{}
 
-	for _, containerChannel := range c.ChannelEvaluations {
+	for _, channelContainer := range c.ChannelContainers {
 		if e.ChannelEvent == nil {
-			misMatches = append(misMatches, containerChannel.ID)
+			misMatches = append(misMatches, channelContainer.ID)
 			continue
 		}
 
 		match := false
 		for _, eventChannel := range e.ChannelEvent.ChannelIDs {
-			if eventChannel.ChannelID == containerChannel.ID {
-				matches = append(matches, containerChannel.ID)
+			if eventChannel.ChannelID == channelContainer.ID {
+				matches = append(matches, channelContainer.ID)
 				match = true
 				break
 			}
@@ -219,9 +214,9 @@ func (c *Container) satisfyChannel(e *commonM.Event, containerEventResult *event
 			continue
 		}
 
-		for _, containerLabel := range containerChannel.ChannelLabels {
+		for _, containerLabel := range channelContainer.ChannelLabels {
 			if _, ok := e.ChannelEvent.ChannelLabels[containerLabel]; ok {
-				matches = append(matches, containerChannel.ID)
+				matches = append(matches, channelContainer.ID)
 				match = true
 				break
 			}
@@ -249,7 +244,7 @@ func (c *Container) satisfyCardRewardTaskLabel(e *commonM.Event, containerEventR
 	matches := []string{}
 	misMatches := []string{}
 
-	for _, t := range c.CardRewardTaskLabels {
+	for _, t := range c.TaskLabelContainers {
 
 		if e.CardEvent.TaskLabels[t] {
 			matches = append(matches, string(t))
@@ -286,9 +281,9 @@ func (c *Container) operate(containerEvent *event.ContainerEventResult) bool {
 	logPos := "[evaluation.domain.container][operate]"
 
 	switch c.ContainerType {
-	case ConstraintContainer, CardRewardTaskLabelContainer, ChannelContainer, PayContainer, ChannelLabelContainer:
+	case ConstraintContainerType, TaskLabelContainerType, ChannelContainerType, PayContainerType, ChannelLabelContainerType:
 		return c.operateContainer(containerEvent)
-	case InnerContainer:
+	case InnerContainerType:
 		return c.operateInnerContainer(containerEvent)
 	default:
 		log.WithFields(log.Fields{

@@ -47,7 +47,7 @@ message CardRewardsReply {
   }
 
   message TaskLabel {
-    string id = 1;
+    string Label = 1;
     string name = 2; 
     int32 show = 3;
     int32 order = 4;

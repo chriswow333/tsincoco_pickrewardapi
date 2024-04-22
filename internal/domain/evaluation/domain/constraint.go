@@ -18,13 +18,13 @@ const (
 	LimitWeekDay                       // 限定日
 )
 
-type Constraint struct {
+type ConstraintContainer struct {
 	ConstraintType ConstraintType `json:"constraintType"`
 	ConstraintName string         `json:"constraintName"`
 	WeekDays       []int32        `json:"weekDays"`
 }
 
-func (c *Constraint) Satisfy(e *commonM.Event, containerEventResult *event.ContainerEventResult) {
+func (c *ConstraintContainer) Satisfy(e *commonM.Event, containerEventResult *event.ContainerEventResult) {
 	logPos := "[reward.domain][Constraint.Satisfy]"
 
 	logFields := log.Fields{
@@ -48,7 +48,7 @@ func (c *Constraint) Satisfy(e *commonM.Event, containerEventResult *event.Conta
 	}
 }
 
-func (c *Constraint) weekDayConstraint(e *commonM.Event, containerEventResult *event.ContainerEventResult) {
+func (c *ConstraintContainer) weekDayConstraint(e *commonM.Event, containerEventResult *event.ContainerEventResult) {
 	logPos := "[reward.domain][Constraint.weekDayConstraint]"
 
 	weekDay := time.Unix(e.Date, 0).Weekday()

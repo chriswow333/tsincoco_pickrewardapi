@@ -5,16 +5,16 @@ import (
 	channelDTO "pickrewardapi/internal/domain/channel/dto"
 )
 
-func TransferChannelTypeDTO2ChannelTypeReply(channelTypeDTOs []*channelDTO.ChannelTypeDTO) []*pb.ChannelTypesReply_ChannelType {
-	channelTypes := []*pb.ChannelTypesReply_ChannelType{}
-	for _, c := range channelTypeDTOs {
-		channelTypes = append(channelTypes, &pb.ChannelTypesReply_ChannelType{
-			ChannelType: c.ChannelType,
-			Name:        c.Name,
-			Order:       c.Order,
+func TransferShowLabelsReply(showLabelDTOs []*channelDTO.ChannelLabelDTO) []*pb.ShowLabelsReply_ChannelLabel {
+	showLabels := []*pb.ShowLabelsReply_ChannelLabel{}
+	for _, c := range showLabelDTOs {
+		showLabels = append(showLabels, &pb.ShowLabelsReply_ChannelLabel{
+			Label: c.Label,
+			Name:  c.Name,
+			Order: c.Order,
 		})
 	}
-	return channelTypes
+	return showLabels
 }
 
 func TransferChannels2ChannelsReply(channelDTOs []*channelDTO.ChannelDTO) []*pb.ChannelsReply_Channel {
@@ -25,11 +25,10 @@ func TransferChannels2ChannelsReply(channelDTOs []*channelDTO.ChannelDTO) []*pb.
 		channels = append(channels, &pb.ChannelsReply_Channel{
 			Id:            c.ID,
 			Name:          c.Name,
-			LinkURL:       c.LinkURL,
-			ChannelType:   c.ChannelType,
 			CreateDate:    c.CreateDate,
 			UpdateDate:    c.UpdateDate,
 			ChannelLabels: c.ChannelLabels,
+			ShowLabel:     c.ShowLabel,
 			Order:         c.Order,
 			ChannelStatus: int32(c.ChannelStatus),
 		})
@@ -45,11 +44,10 @@ func TransferSearchChannels2SearchChannelsReply(channelDTOs []*channelDTO.Channe
 		channels = append(channels, &pb.SearchChannelsReply_Channel{
 			Id:            c.ID,
 			Name:          c.Name,
-			LinkURL:       c.LinkURL,
-			ChannelType:   c.ChannelType,
 			CreateDate:    c.CreateDate,
 			UpdateDate:    c.UpdateDate,
 			ChannelLabels: c.ChannelLabels,
+			ShowLabel:     c.ShowLabel,
 			Order:         c.Order,
 			ChannelStatus: int32(c.ChannelStatus),
 		})

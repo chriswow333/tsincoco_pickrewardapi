@@ -64,7 +64,8 @@ func NewPrimarySql() *pgx.ConnPool {
 
 	portInt, err := strconv.ParseUint(port, 10, 64)
 
-	logrus.Info("[psql] host:", host)
+	logrus.Info("[psql.host]", host)
+	logrus.Info("[psql.db]", db)
 
 	pgxConfig := pgx.ConnConfig{
 		Host:     host, //host.docker.internal

@@ -8,5 +8,4 @@ type ContainerEventResult struct {
 	InnerContainerEventResults []*ContainerEventResult `json:"containerEventResults"`
 	Matches                    []string                `json:"matches"`
 	MisMatches                 []string                `json:"misMatches"`
-	// ConstraintEventResult      *ConstraintEventResult
 }

@@ -7,15 +7,21 @@ import (
 )
 
 type ContainerDTO struct {
-	ID                   string           `bson:"id" json:"id"`
-	ContainerOperator    int32            `bson:"container_operator" json:"containerOperator"`
-	ContainerType        int32            `bson:"container_type" json:"containerType"`
-	Containers           []*ContainerDTO  `bson:"containers" json:"containers"`
-	CardRewardTaskLabels []int32          `bson:"card_reward_task_labels" json:"cardRewardTaskLabels"`
-	ChannelIDs           []string         `bson:"channel_ids" json:"channelIDs"`
-	PayIDs               []string         `bson:"pay_ids" json:"payIDs"`
-	ChannelLabels        []int32          `bson:"channel_labels" json:"channelLabels"`
-	Constraints          []*ConstraintDTO `bson:"constraints" json:"constraints"`
+	ID                string `bson:"id" json:"id"`
+	ContainerOperator int32  `bson:"container_operator" json:"containerOperator"`
+	ContainerType     int32  `bson:"container_type" json:"containerType"`
+
+	Containers []*ContainerDTO `bson:"containers" json:"containers"`
+
+	TaskLabels []string `bson:"task_labels" json:"taskLabels"`
+
+	ChannelLabels []string `bson:"channel_labels" json:"channelLabels"`
+
+	ChannelIDs []string `bson:"channel_ids" json:"channelIDs"`
+
+	PayIDs []string `bson:"pay_ids" json:"payIDs"`
+
+	Constraints []*ConstraintDTO `bson:"constraints" json:"constraints"`
 }
 
 // Make the Attrs struct implement the driver.Valuer interface. This method

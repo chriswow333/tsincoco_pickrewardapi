@@ -16,14 +16,15 @@ import (
 
 type ChannelLabelStore interface {
 	ModifiedChannelLabel(ctx context.Context, channelDTO *channelDTO.ChannelLabelDTO) error
-	GetAllChannelLabels(ctx context.Context) ([]*channelDTO.ChannelLabelDTO, error)
+	GetChannelLabelsByShow(ctx context.Context, show int32) ([]*channelDTO.ChannelLabelDTO, error)
 	GetChannelLabelByLabel(ctx context.Context, label int32) (*channelDTO.ChannelLabelDTO, error)
 }
 
 type channelLabelImpl struct {
 	dig.In
 
-	primary *pgx.ConnPool
+	primary   *pgx.ConnPool
+	migration *pgx.ConnPool
 }
 
 func NewChannelLabel(sql *psql.Psql) ChannelLabelStore {
@@ -34,18 +35,19 @@ func NewChannelLabel(sql *psql.Psql) ChannelLabelStore {
 	}).Info("init channel label store")
 
 	return &channelLabelImpl{
-		primary: sql.Primary,
+		primary:   sql.Primary,
+		migration: sql.Migration,
 	}
 }
 
 const CHANNEL_LABEL = "channel_label"
-const ALL_CHANNEL_LABEL_COLUMNS = " \"label\", \"name\", \"show\" "
+const ALL_CHANNEL_LABEL_COLUMNS = " \"label\", \"name\", \"show\", \"order\" "
 
 var MODIFIED_CHANNEL_LABEL_STAT = fmt.Sprintf(
 	"INSERT INTO %s "+
-		"(%s) VALUES ($1, $2, $3)"+
+		"(%s) VALUES ($1, $2, $3, $4)"+
 		" ON CONFLICT(label) DO UPDATE SET  "+
-		" \"name\" = $4, \"show\" = $5 ",
+		" \"name\" = $5, \"show\" = $6 ",
 	CHANNEL_LABEL, ALL_CHANNEL_LABEL_COLUMNS,
 )
 
@@ -75,9 +77,11 @@ func (im *channelLabelImpl) ModifiedChannelLabel(ctx context.Context, channelLab
 		channelLabelDTO.Label,
 		channelLabelDTO.Name,
 		channelLabelDTO.Show,
+		channelLabelDTO.Order,
 
 		channelLabelDTO.Name,
 		channelLabelDTO.Show,
+		channelLabelDTO.Order,
 	}
 
 	if _, err := tx.Exec(MODIFIED_CHANNEL_LABEL_STAT, updater...); err != nil {
@@ -100,16 +104,18 @@ func (im *channelLabelImpl) ModifiedChannelLabel(ctx context.Context, channelLab
 
 var SELECT_CHANNEL_LABELS_STAT = fmt.Sprintf(
 	" SELECT %s "+
-		" FROM %s ORDER BY label ",
+		" FROM %s "+
+		" WHERE show = $1 "+
+		" ORDER BY \"order\" ",
 	ALL_CHANNEL_LABEL_COLUMNS, CHANNEL_LABEL,
 )
 
-func (im *channelLabelImpl) GetAllChannelLabels(ctx context.Context) ([]*channelDTO.ChannelLabelDTO, error) {
-	logPos := "[channel_label.store][GetAllChannelLabels]"
+func (im *channelLabelImpl) GetChannelLabelsByShow(ctx context.Context, show int32) ([]*channelDTO.ChannelLabelDTO, error) {
+	logPos := "[channel_label.store][GetChannelLabelsByShow]"
 
 	channelLabelDTOs := []*channelDTO.ChannelLabelDTO{}
 
-	rows, err := im.primary.Query(SELECT_CHANNEL_LABELS_STAT)
+	rows, err := im.primary.Query(SELECT_CHANNEL_LABELS_STAT, show)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"pos": logPos,
@@ -125,6 +131,7 @@ func (im *channelLabelImpl) GetAllChannelLabels(ctx context.Context) ([]*channel
 			&channelLabelDTO.Label,
 			&channelLabelDTO.Name,
 			&channelLabelDTO.Show,
+			&channelLabelDTO.Order,
 		}
 		if err := rows.Scan(selector...); err != nil {
 			log.WithFields(log.Fields{
@@ -165,6 +172,7 @@ func (im *channelLabelImpl) GetChannelLabelByLabel(ctx context.Context, label in
 			&channelLabelDTO.Label,
 			&channelLabelDTO.Name,
 			&channelLabelDTO.Show,
+			&channelLabelDTO.Order,
 		}
 		if err := rows.Scan(selector...); err != nil {
 			log.WithFields(log.Fields{

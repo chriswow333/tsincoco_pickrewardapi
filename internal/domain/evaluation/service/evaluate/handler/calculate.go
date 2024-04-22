@@ -22,19 +22,19 @@ func CalculateEvaluationResult(eventResult *event.EvaluationEventResult) *evalua
 
 	for k, v := range containerTypeMatchedMap {
 		switch k {
-		case int32(domain.CardRewardTaskLabelContainer):
+		case int32(domain.TaskLabelContainerType):
 			for label := range v {
 				evaluationEventResultResp.CardRewardTaskLabelMatched = append(evaluationEventResultResp.CardRewardTaskLabelMatched, label)
 			}
-		case int32(domain.ChannelContainer):
+		case int32(domain.ChannelContainerType):
 			for id := range v {
 				evaluationEventResultResp.ChannelMatched = append(evaluationEventResultResp.ChannelMatched, id)
 			}
-		case int32(domain.PayContainer):
+		case int32(domain.PayContainerType):
 			for id := range v {
 				evaluationEventResultResp.PayMatched = append(evaluationEventResultResp.PayMatched, id)
 			}
-		case int32(domain.ChannelLabelContainer):
+		case int32(domain.ChannelLabelContainerType):
 			for label := range v {
 				evaluationEventResultResp.ChannelLabelMatched = append(evaluationEventResultResp.ChannelLabelMatched, label)
 			}
@@ -80,7 +80,7 @@ func processMatchedContainer(containerEventResult *event.ContainerEventResult, m
 		return
 	}
 
-	if containerEventResult.ContainerType == int32(domain.InnerContainer) {
+	if containerEventResult.ContainerType == int32(domain.InnerContainerType) {
 		for _, c := range containerEventResult.InnerContainerEventResults {
 			processMatchedContainer(c, matchedContainerTypeMap)
 		}

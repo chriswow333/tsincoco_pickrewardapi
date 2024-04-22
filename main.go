@@ -137,7 +137,9 @@ func buildContainer() *dig.Container {
 	container.Provide(cardStore.NewTaskLabel)
 
 	container.Provide(channelService.NewChannel)
+	container.Provide(channelService.NewChannelLabel)
 	container.Provide(channelStore.NewChannel)
+	container.Provide(channelStore.NewChannelLabel)
 
 	container.Provide(initGrpcServer)
 	return container
@@ -166,6 +168,7 @@ func initGrpcServer(
 	bankService cardService.BankService,
 	cardService cardService.CardService,
 	channelService channelService.ChannelService,
+	channelLabelService channelService.ChannelLabelService,
 	cardRewardService cardService.CardRewardService,
 	payService payService.PayService,
 
@@ -209,7 +212,7 @@ func initGrpcServer(
 	bankApplication.NewBankServer(s, bankService)
 	cardApplication.NewCardServer(s, cardService)
 	cardRewardApplication.NewCardRewardServer(s, cardRewardService)
-	channelApplication.NewChannelServer(s, channelService)
+	channelApplication.NewChannelServer(s, channelService, channelLabelService)
 	payApplication.NewPayServer(s, payService)
 
 	log.WithFields(log.Fields{

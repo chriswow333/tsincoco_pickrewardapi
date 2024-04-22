@@ -11,8 +11,8 @@ package channel.v1;
 // The greeting service definition.
 service ChannelV1 {
 
-  rpc GetChannelTypes (EmptyReq) returns (ChannelTypesReply){}
-  rpc GetChannelsByType (ChannelTypeReq) returns (ChannelsReply){}
+  rpc GetShowLabels (EmptyReq) returns (ShowLabelsReply){}
+  rpc GetChannelsByShowLabel (ShowLabelReq) returns (ChannelsReply){}
   rpc GetsByChannelIDs(ChannelIDsReq) returns(ChannelsReply) {}
   rpc SearchChannel(SearchChannelReq) returns (SearchChannelsReply) {}
 }
@@ -35,22 +35,22 @@ message ChannelIDsReq{
   repeated string channelIDs = 1;
 }
 
-message ChannelTypeReq {
-  int32 ctype = 1;
+message ShowLabelReq {
+  string label = 1;
   int32 limit = 2;
   int32 offset = 3;
 }
 
-message ChannelTypesReply{
+message ShowLabelsReply{
 
-  message ChannelType {
-    int32 channelType = 1;
+  message ChannelLabel {
+    string label = 1;
     string name = 2;
     int32 order = 3;
   }
   
   Reply reply = 1;
-  repeated ChannelType channelTypes = 2;
+  repeated ChannelLabel channelLabels = 2;
 
 }
 
@@ -61,13 +61,12 @@ message ChannelsReply {
   message Channel{
     string id = 1;
     string name = 2;
-    string linkURL = 3;
-    int32 channelType = 4;
-    int64 createDate = 5;
-    int64 updateDate = 6;
-    repeated int32 channelLabels = 7;
-    int32 order = 8;
-    int32 channelStatus = 9;
+    int64 createDate = 3;
+    int64 updateDate = 4;
+    repeated string channelLabels = 5;
+    string showLabel = 6;
+    int32 order = 7;
+    int32 channelStatus = 8;
   }
 
 
@@ -88,13 +87,12 @@ message SearchChannelsReply{
   message Channel{
     string id = 1;
     string name = 2;
-    string linkURL = 3;
-    int32 channelType = 4;
-    int64 createDate = 5;
-    int64 updateDate = 6;
-    repeated int32 channelLabels = 7;
-    int32 order = 8;
-    int32 channelStatus = 9;
+    int64 createDate = 3;
+    int64 updateDate = 4;
+    repeated string channelLabels = 5;
+    string showLabel = 6;
+    int32 order = 7;
+    int32 channelStatus = 8;
   }
 
   Reply reply = 1;

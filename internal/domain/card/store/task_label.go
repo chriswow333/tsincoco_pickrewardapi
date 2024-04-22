@@ -38,7 +38,7 @@ func NewTaskLabel(sql *psql.Psql) TaskLabelStore {
 }
 
 const TASK_LABEL = "task_label"
-const ALL_TASK_LABEL_COLUMNS = " \"id\", \"name\", \"show\" "
+const ALL_TASK_LABEL_COLUMNS = " \"label\", \"name\", \"show\" "
 
 var MODIFIED_TASK_LABEL_STAT = fmt.Sprintf(
 	"INSERT INTO %s (%s) "+
@@ -54,8 +54,8 @@ func (im *taskLabelImpl) ModifiedTaskLabel(ctx context.Context, taskLabelDTO *ca
 	tx, err := im.primary.Begin()
 	if err != nil {
 		log.WithFields(log.Fields{
-			"pos":             logPos,
-			"taskLabelDTO.ID": taskLabelDTO.ID,
+			"pos":                logPos,
+			"taskLabelDTO.Label": taskLabelDTO.Label,
 		}).Error("psql.Begin failed: ", err)
 		return err
 	}
@@ -70,7 +70,7 @@ func (im *taskLabelImpl) ModifiedTaskLabel(ctx context.Context, taskLabelDTO *ca
 	}()
 
 	updater := []interface{}{
-		taskLabelDTO.ID,
+		taskLabelDTO.Label,
 		taskLabelDTO.Name,
 		taskLabelDTO.Show,
 
@@ -80,8 +80,8 @@ func (im *taskLabelImpl) ModifiedTaskLabel(ctx context.Context, taskLabelDTO *ca
 
 	if _, err := tx.Exec(MODIFIED_TASK_LABEL_STAT, updater...); err != nil {
 		log.WithFields(log.Fields{
-			"pos":             logPos,
-			"taskLabelDTO.ID": taskLabelDTO.ID,
+			"pos":                logPos,
+			"taskLabelDTO.Label": taskLabelDTO.Label,
 		}).Error("tx.Exec failed: ", err)
 		return err
 	}
@@ -117,7 +117,7 @@ func (im *taskLabelImpl) GetAllTaskLabels(ctx context.Context) ([]*cardDTO.TaskL
 	for rows.Next() {
 		taskLabelDTO := &cardDTO.TaskLabelDTO{}
 		selector := []interface{}{
-			&taskLabelDTO.ID,
+			&taskLabelDTO.Label,
 			&taskLabelDTO.Name,
 			&taskLabelDTO.Show,
 		}
@@ -155,7 +155,7 @@ func (im *taskLabelImpl) GetTaskLabelByID(ctx context.Context, id string) (*card
 	if rows.Next() {
 
 		selector := []interface{}{
-			&taskLabelDTO.ID,
+			&taskLabelDTO.Label,
 			&taskLabelDTO.Name,
 			&taskLabelDTO.Show,
 		}

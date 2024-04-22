@@ -20,68 +20,86 @@ type server struct {
 
 	pb.UnimplementedChannelV1Server
 
-	channelService channelService.ChannelService
+	channelService      channelService.ChannelService
+	channelLabelService channelService.ChannelLabelService
 }
 
 func NewChannelServer(
 	s *grpc.Server,
 
 	channelService channelService.ChannelService,
+	channelLabelService channelService.ChannelLabelService,
 ) {
 	log.WithFields(log.Fields{
 		"pos": "[channel.api][NewChannelServer]",
 	}).Info("Init")
 
 	pb.RegisterChannelV1Server(s, &server{
-		channelService: channelService,
+		channelService:      channelService,
+		channelLabelService: channelLabelService,
 	})
 }
 
-func (s *server) GetChannelTypes(ctx context.Context, in *pb.EmptyReq) (*pb.ChannelTypesReply, error) {
-	logPos := "[channel.api][GetChannelTypes]"
+func (s *server) GetShowLabels(ctx context.Context, in *pb.EmptyReq) (*pb.ShowLabelsReply, error) {
+	logPos := "[channel.api][GetShowLabels]"
 
 	log.WithFields(log.Fields{
 		"pos": logPos,
 		"req": in,
 	}).Info("Request")
 
-	channelTypeDTOs := s.channelService.GetChannelTypes(ctx)
-
-	channelTypes := handler.TransferChannelTypeDTO2ChannelTypeReply(channelTypeDTOs)
-
-	channelTypesLog, _ := json.Marshal(channelTypes)
-	log.WithFields(log.Fields{
-		"pos":  logPos,
-		"resp": string(channelTypesLog),
-	}).Info("Response")
-
-	return &pb.ChannelTypesReply{
-		Reply: &pb.Reply{
-			Status: 0,
-		},
-		ChannelTypes: channelTypes,
-	}, nil
-}
-
-func (s *server) GetChannelsByType(ctx context.Context, in *pb.ChannelTypeReq) (*pb.ChannelsReply, error) {
-	logPos := "[channel.api][GetChannelsByType]"
-	log.WithFields(log.Fields{
-		"pos": logPos,
-		"req": in,
-	}).Info("Request")
-
-	channelDTOs, err := s.channelService.GetChannelsByType(ctx, in.Ctype, in.Limit, in.Offset)
+	showLabelDTOs, err := s.channelLabelService.GetShowLabels(ctx)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"pos": logPos,
-		}).Error("channelService.GetChannelsByType failed: ", err)
+		}).Error("channelService.GetShowLabels failed: ", err)
+
+		return &pb.ShowLabelsReply{
+			Reply: &pb.Reply{
+				Status: 1,
+				Error: &pb.Error{
+					ErrorCode:    100,
+					ErrorMessage: "GetShowLabels failed",
+				},
+			},
+		}, nil
+	}
+
+	showLabels := handler.TransferShowLabelsReply(showLabelDTOs)
+
+	showLabelLogs, _ := json.Marshal(showLabels)
+	log.WithFields(log.Fields{
+		"pos":  logPos,
+		"resp": string(showLabelLogs),
+	}).Info("Response")
+
+	return &pb.ShowLabelsReply{
+		Reply: &pb.Reply{
+			Status: 0,
+		},
+		ChannelLabels: showLabels,
+	}, nil
+}
+
+func (s *server) GetChannelsByShowLabel(ctx context.Context, in *pb.ShowLabelReq) (*pb.ChannelsReply, error) {
+	logPos := "[channel.api][GetChannelsByShowLabel]"
+	log.WithFields(log.Fields{
+		"pos": logPos,
+		"req": in,
+	}).Info("Request")
+
+	channelDTOs, err := s.channelService.GetChannelsByLabel(ctx, in.Label, in.Limit, in.Offset)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"pos": logPos,
+		}).Error("channelService.GetChannelsByLabel failed: ", err)
 
 		return &pb.ChannelsReply{
 			Reply: &pb.Reply{
 				Status: 1,
 				Error: &pb.Error{
 					ErrorCode:    100,
-					ErrorMessage: "GetChannelsByType failed",
+					ErrorMessage: "GetChannelsByLabel failed",
 				},
 			},
 		}, nil

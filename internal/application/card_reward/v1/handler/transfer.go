@@ -32,7 +32,7 @@ func TransferCardRewards2CardRewardsReply(cardRewardDTOs []*cardDTO.CardRewardDT
 
 		for _, t := range c.TaskLabelDTOs {
 			taskLabels = append(taskLabels, &pb.CardRewardsReply_TaskLabel{
-				Id:    t.ID,
+				Label: t.Label,
 				Name:  t.Name,
 				Show:  t.Show,
 				Order: t.Order,

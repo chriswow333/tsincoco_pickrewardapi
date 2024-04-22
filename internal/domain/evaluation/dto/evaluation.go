@@ -7,16 +7,16 @@ import (
 )
 
 type EvaluationDTO struct {
-	ID        string `json:"id"`
-	OwnerID   string `json:"ownerID"`
-	StartDate int64  `json:"startDate"`
-	EndDate   int64  `json:"endDate"`
-
+	ID         string `json:"id"`
+	OwnerID    string `json:"ownerID"`
+	StartDate  int64  `json:"startDate"`
+	EndDate    int64  `json:"endDate"`
 	FeedbackID string `json:"feedbackID"`
 
-	CreateDate int64       `json:"createDate"`
-	UpdateDate int64       `json:"updateDate"`
-	Payload    *PayloadDTO `json:"payload"`
+	Payload *PayloadDTO `json:"payload"`
+
+	CreateDate int64 `json:"createDate"`
+	UpdateDate int64 `json:"updateDate"`
 }
 
 // Make the Attrs struct implement the driver.Valuer interface. This method

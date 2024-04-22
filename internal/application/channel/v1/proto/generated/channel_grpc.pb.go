@@ -22,8 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ChannelV1Client interface {
-	GetChannelTypes(ctx context.Context, in *EmptyReq, opts ...grpc.CallOption) (*ChannelTypesReply, error)
-	GetChannelsByType(ctx context.Context, in *ChannelTypeReq, opts ...grpc.CallOption) (*ChannelsReply, error)
+	GetShowLabels(ctx context.Context, in *EmptyReq, opts ...grpc.CallOption) (*ShowLabelsReply, error)
+	GetChannelsByShowLabel(ctx context.Context, in *ShowLabelReq, opts ...grpc.CallOption) (*ChannelsReply, error)
 	GetsByChannelIDs(ctx context.Context, in *ChannelIDsReq, opts ...grpc.CallOption) (*ChannelsReply, error)
 	SearchChannel(ctx context.Context, in *SearchChannelReq, opts ...grpc.CallOption) (*SearchChannelsReply, error)
 }
@@ -36,18 +36,18 @@ func NewChannelV1Client(cc grpc.ClientConnInterface) ChannelV1Client {
 	return &channelV1Client{cc}
 }
 
-func (c *channelV1Client) GetChannelTypes(ctx context.Context, in *EmptyReq, opts ...grpc.CallOption) (*ChannelTypesReply, error) {
-	out := new(ChannelTypesReply)
-	err := c.cc.Invoke(ctx, "/channel.v1.ChannelV1/GetChannelTypes", in, out, opts...)
+func (c *channelV1Client) GetShowLabels(ctx context.Context, in *EmptyReq, opts ...grpc.CallOption) (*ShowLabelsReply, error) {
+	out := new(ShowLabelsReply)
+	err := c.cc.Invoke(ctx, "/channel.v1.ChannelV1/GetShowLabels", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *channelV1Client) GetChannelsByType(ctx context.Context, in *ChannelTypeReq, opts ...grpc.CallOption) (*ChannelsReply, error) {
+func (c *channelV1Client) GetChannelsByShowLabel(ctx context.Context, in *ShowLabelReq, opts ...grpc.CallOption) (*ChannelsReply, error) {
 	out := new(ChannelsReply)
-	err := c.cc.Invoke(ctx, "/channel.v1.ChannelV1/GetChannelsByType", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/channel.v1.ChannelV1/GetChannelsByShowLabel", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -76,8 +76,8 @@ func (c *channelV1Client) SearchChannel(ctx context.Context, in *SearchChannelRe
 // All implementations must embed UnimplementedChannelV1Server
 // for forward compatibility
 type ChannelV1Server interface {
-	GetChannelTypes(context.Context, *EmptyReq) (*ChannelTypesReply, error)
-	GetChannelsByType(context.Context, *ChannelTypeReq) (*ChannelsReply, error)
+	GetShowLabels(context.Context, *EmptyReq) (*ShowLabelsReply, error)
+	GetChannelsByShowLabel(context.Context, *ShowLabelReq) (*ChannelsReply, error)
 	GetsByChannelIDs(context.Context, *ChannelIDsReq) (*ChannelsReply, error)
 	SearchChannel(context.Context, *SearchChannelReq) (*SearchChannelsReply, error)
 	mustEmbedUnimplementedChannelV1Server()
@@ -87,11 +87,11 @@ type ChannelV1Server interface {
 type UnimplementedChannelV1Server struct {
 }
 
-func (UnimplementedChannelV1Server) GetChannelTypes(context.Context, *EmptyReq) (*ChannelTypesReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetChannelTypes not implemented")
+func (UnimplementedChannelV1Server) GetShowLabels(context.Context, *EmptyReq) (*ShowLabelsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetShowLabels not implemented")
 }
-func (UnimplementedChannelV1Server) GetChannelsByType(context.Context, *ChannelTypeReq) (*ChannelsReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetChannelsByType not implemented")
+func (UnimplementedChannelV1Server) GetChannelsByShowLabel(context.Context, *ShowLabelReq) (*ChannelsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetChannelsByShowLabel not implemented")
 }
 func (UnimplementedChannelV1Server) GetsByChannelIDs(context.Context, *ChannelIDsReq) (*ChannelsReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetsByChannelIDs not implemented")
@@ -112,38 +112,38 @@ func RegisterChannelV1Server(s grpc.ServiceRegistrar, srv ChannelV1Server) {
 	s.RegisterService(&ChannelV1_ServiceDesc, srv)
 }
 
-func _ChannelV1_GetChannelTypes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ChannelV1_GetShowLabels_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(EmptyReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ChannelV1Server).GetChannelTypes(ctx, in)
+		return srv.(ChannelV1Server).GetShowLabels(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/channel.v1.ChannelV1/GetChannelTypes",
+		FullMethod: "/channel.v1.ChannelV1/GetShowLabels",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChannelV1Server).GetChannelTypes(ctx, req.(*EmptyReq))
+		return srv.(ChannelV1Server).GetShowLabels(ctx, req.(*EmptyReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ChannelV1_GetChannelsByType_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChannelTypeReq)
+func _ChannelV1_GetChannelsByShowLabel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ShowLabelReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ChannelV1Server).GetChannelsByType(ctx, in)
+		return srv.(ChannelV1Server).GetChannelsByShowLabel(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/channel.v1.ChannelV1/GetChannelsByType",
+		FullMethod: "/channel.v1.ChannelV1/GetChannelsByShowLabel",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ChannelV1Server).GetChannelsByType(ctx, req.(*ChannelTypeReq))
+		return srv.(ChannelV1Server).GetChannelsByShowLabel(ctx, req.(*ShowLabelReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -192,12 +192,12 @@ var ChannelV1_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ChannelV1Server)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetChannelTypes",
-			Handler:    _ChannelV1_GetChannelTypes_Handler,
+			MethodName: "GetShowLabels",
+			Handler:    _ChannelV1_GetShowLabels_Handler,
 		},
 		{
-			MethodName: "GetChannelsByType",
-			Handler:    _ChannelV1_GetChannelsByType_Handler,
+			MethodName: "GetChannelsByShowLabel",
+			Handler:    _ChannelV1_GetChannelsByShowLabel_Handler,
 		},
 		{
 			MethodName: "GetsByChannelIDs",

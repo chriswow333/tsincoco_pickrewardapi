@@ -138,7 +138,7 @@ func (t *Transfer) transferToContainer(ctx context.Context, containerDTO *evalua
 
 	containers := []*domain.Container{}
 
-	if containerDTO.ContainerType == int32(domain.InnerContainer) {
+	if containerDTO.ContainerType == int32(domain.InnerContainerType) {
 
 		if containerDTO.Containers == nil {
 			log.WithFields(log.Fields{
@@ -170,7 +170,7 @@ func (t *Transfer) transferToContainer(ctx context.Context, containerDTO *evalua
 
 	var err error
 
-	channelEvaluationDTOs, err := t.transferChannelEvaluationDTOs(ctx, containerDTO)
+	channelContainers, err := t.transferChannelContainers(ctx, containerDTO)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"pos":          logPos,
@@ -179,7 +179,7 @@ func (t *Transfer) transferToContainer(ctx context.Context, containerDTO *evalua
 		return nil, err
 	}
 
-	constraints, err := transferToConstraint(containerDTO)
+	constraintContainers, err := transferToConstraintContainer(containerDTO)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"pos":          logPos,
@@ -189,24 +189,25 @@ func (t *Transfer) transferToContainer(ctx context.Context, containerDTO *evalua
 	}
 
 	container := &domain.Container{
-		ID:                      containerID,
-		ContainerOperator:       domain.ContainerOperator(containerDTO.ContainerOperator),
-		ContainerType:           domain.ContainerType(containerDTO.ContainerType),
-		InnerContainers:         containers,
-		Constraints:             constraints,
-		CardRewardTaskLabels:    containerDTO.CardRewardTaskLabels,
-		ChannelEvaluations:      channelEvaluationDTOs,
-		PayEvaluations:          containerDTO.PayIDs,
-		ChannelLabelEvaluations: containerDTO.ChannelLabels,
+		ID:                     containerID,
+		ContainerOperator:      domain.ContainerOperator(containerDTO.ContainerOperator),
+		ContainerType:          domain.ContainerType(containerDTO.ContainerType),
+		InnerContainers:        containers,
+		ConstraintContainers:   constraintContainers,
+		TaskLabelContainers:    containerDTO.TaskLabels,
+		ChannelContainers:      channelContainers,
+		PayContainers:          containerDTO.PayIDs,
+		ChannelLabelContainers: containerDTO.ChannelLabels,
 	}
 	return container, nil
 }
 
-func (t *Transfer) transferChannelEvaluationDTOs(ctx context.Context, containerDTO *evaluationDTO.ContainerDTO) ([]*evaluationDTO.ChannelEvaluationDTO, error) {
+func (t *Transfer) transferChannelContainers(ctx context.Context, containerDTO *evaluationDTO.ContainerDTO) ([]*domain.ChannelContainer, error) {
 	logPos := "[evaluation.app.transfer][transferChannel]"
 
-	if containerDTO.ContainerType == int32(domain.ChannelContainer) {
-		channelEvaluationDTOs := []*evaluationDTO.ChannelEvaluationDTO{}
+	if containerDTO.ContainerType == int32(domain.ChannelContainerType) {
+
+		channelContainers := []*domain.ChannelContainer{}
 
 		if containerDTO.ChannelIDs == nil {
 			log.WithFields(log.Fields{
@@ -226,25 +227,25 @@ func (t *Transfer) transferChannelEvaluationDTOs(ctx context.Context, containerD
 				return nil, err
 			}
 
-			channelEvaluationDTOs = append(channelEvaluationDTOs, &evaluationDTO.ChannelEvaluationDTO{
+			channelContainers = append(channelContainers, &domain.ChannelContainer{
 				ID:            channel.ID,
 				ChannelLabels: channel.ChannelLabels,
 			})
 		}
-		return channelEvaluationDTOs, nil
+		return channelContainers, nil
 	}
 
 	return nil, nil
 }
 
-func transferToConstraint(containerDTO *evaluationDTO.ContainerDTO) ([]*domain.Constraint, error) {
+func transferToConstraintContainer(containerDTO *evaluationDTO.ContainerDTO) ([]*domain.ConstraintContainer, error) {
 	logPos := "[evaluation.app.transfer][transferToConstraint]"
 
-	if containerDTO.ContainerType != int32(domain.ConstraintContainer) {
+	if containerDTO.ContainerType != int32(domain.ConstraintContainerType) {
 		return nil, nil
 	}
 
-	constraints := []*domain.Constraint{}
+	constraintContainers := []*domain.ConstraintContainer{}
 	if containerDTO.Constraints == nil {
 		log.WithFields(log.Fields{
 			"pos":          logPos,
@@ -254,13 +255,13 @@ func transferToConstraint(containerDTO *evaluationDTO.ContainerDTO) ([]*domain.C
 	}
 
 	for _, c := range containerDTO.Constraints {
-		constraints = append(constraints, &domain.Constraint{
+		constraintContainers = append(constraintContainers, &domain.ConstraintContainer{
 			ConstraintType: domain.ConstraintType(c.ConstraintType),
 			ConstraintName: c.ConstraintName,
 			WeekDays:       c.WeekDays,
 		})
 	}
 
-	return constraints, nil
+	return constraintContainers, nil
 
 }

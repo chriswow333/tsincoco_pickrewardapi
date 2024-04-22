@@ -12,8 +12,8 @@ type Event struct {
 }
 
 type CardEvent struct {
-	FeedbackType int32          `json:"feedbackType"`
-	TaskLabels   map[int32]bool `json:"taskLabels"`
+	FeedbackType int32           `json:"feedbackType"`
+	TaskLabels   map[string]bool `json:"taskLabels"`
 }
 
 type PayStatus int32
@@ -31,10 +31,10 @@ type PayEvent struct {
 
 type ChannelEvent struct {
 	ChannelIDs    []*ChannelIDEvent `json:"channelIDs"`
-	ChannelLabels map[int32]bool    `json:"channelLabels"`
+	ChannelLabels map[string]bool   `json:"channelLabels"`
 }
 
 type ChannelIDEvent struct {
-	ChannelID     string         `json:"channelID"`
-	ChannelLabels map[int32]bool `json:"channelLabels"`
+	ChannelID     string          `json:"channelID"`
+	ChannelLabels map[string]bool `json:"channelLabels"`
 }

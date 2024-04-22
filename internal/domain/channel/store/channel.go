@@ -17,7 +17,7 @@ import (
 
 type ChannelStore interface {
 	ModifiedChannel(ctx context.Context, channelDTO *channelDTO.ChannelDTO) error
-	GetChannelsByType(ctx context.Context, channelCategoryType int32, status commonM.Status, limit, offset int32) ([]*channelDTO.ChannelDTO, error)
+	GetChannelsByShowLabel(ctx context.Context, showLabel string, status commonM.Status, limit, offset int32) ([]*channelDTO.ChannelDTO, error)
 	GetChannelByID(ctx context.Context, ID string) (*channelDTO.ChannelDTO, error)
 	GetChannelByIDs(ctx context.Context, IDs []string) ([]*channelDTO.ChannelDTO, error)
 	SearchChannel(ctx context.Context, keyword string, status commonM.Status) ([]*channelDTO.ChannelDTO, error)
@@ -42,17 +42,16 @@ func NewChannel(sql *psql.Psql) ChannelStore {
 }
 
 const CHANNEL = "channel"
-const ALL_CAHNNEL_COLUMNS = " \"id\", \"name\", \"link_url\", \"channel_type\", \"create_date\", \"update_date\", " +
-	" \"channel_labels\", \"order\", \"channel_status\" "
+const ALL_CAHNNEL_COLUMNS = " \"id\", \"name\", \"create_date\", \"update_date\", " +
+	" \"channel_labels\", \"show_label\", \"order\", \"channel_status\" "
 
 var MODIFIED_CHANNEL_STAT = fmt.Sprintf("INSERT INTO %s "+
 	" (%s) "+
-	" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"+
+	" VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"+
 	" ON CONFLICT(id) DO UPDATE SET  "+
-	" \"name\" = $10, \"link_url\" = $11, \"channel_type\" = $12, "+
-	" \"create_date\" = $13, \"update_date\" = $14, "+
-	" \"channel_labels\" = $15, \"order\" = $16, "+
-	" \"channel_status\" = $17 ", CHANNEL, ALL_CAHNNEL_COLUMNS)
+	" \"name\" = $9, \"create_date\" = $10, \"update_date\" = $11, "+
+	" \"channel_labels\" = $12, \"show_label\" = $13, \"order\" = $14, "+
+	" \"channel_status\" = $15 ", CHANNEL, ALL_CAHNNEL_COLUMNS)
 
 func (im *channelImpl) ModifiedChannel(ctx context.Context, channelDTO *channelDTO.ChannelDTO) error {
 	logPos := "[channel.store][ModifiedChannel]"
@@ -79,16 +78,18 @@ func (im *channelImpl) ModifiedChannel(ctx context.Context, channelDTO *channelD
 	updater := []interface{}{
 		channelDTO.ID,
 		channelDTO.Name,
-		channelDTO.LinkURL,
-		channelDTO.ChannelType,
+		channelDTO.CreateDate,
+		channelDTO.UpdateDate,
 		channelDTO.ChannelLabels,
+		channelDTO.ShowLabel,
 		channelDTO.Order,
 		channelDTO.ChannelStatus,
 
 		channelDTO.Name,
-		channelDTO.LinkURL,
-		channelDTO.ChannelType,
+		channelDTO.CreateDate,
+		channelDTO.UpdateDate,
 		channelDTO.ChannelLabels,
+		channelDTO.ShowLabel,
 		channelDTO.Order,
 		channelDTO.ChannelStatus,
 	}
@@ -111,23 +112,23 @@ func (im *channelImpl) ModifiedChannel(ctx context.Context, channelDTO *channelD
 	return nil
 }
 
-var SELECT_CHANNELS_BY_CHANNEL_TYPE_STAT = fmt.Sprintf("SELECT %s "+
+var SELECT_CHANNELS_BY_SHOW_LABEL_STAT = fmt.Sprintf("SELECT %s "+
 	" FROM %s "+
-	" WHERE \"channel_type\" = $1 "+
+	" WHERE \"show_label\" = $1 "+
 	" AND channel_status = $2 "+
 	" ORDER BY \"order\" "+
 	" LIMIT $3 OFFSET $4 ", ALL_CAHNNEL_COLUMNS, CHANNEL)
 
-func (im *channelImpl) GetChannelsByType(ctx context.Context, ctype int32, status commonM.Status, limit, offset int32) ([]*channelDTO.ChannelDTO, error) {
+func (im *channelImpl) GetChannelsByShowLabel(ctx context.Context, showLabel string, status commonM.Status, limit, offset int32) ([]*channelDTO.ChannelDTO, error) {
 	logPos := "[channel.store][GetChannelsByType]"
 
 	channelDTOs := []*channelDTO.ChannelDTO{}
 
-	rows, err := im.primary.Query(SELECT_CHANNELS_BY_CHANNEL_TYPE_STAT, ctype, status, limit, offset)
+	rows, err := im.primary.Query(SELECT_CHANNELS_BY_SHOW_LABEL_STAT, showLabel, status, limit, offset)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"pos":          logPos,
-			"channel.type": ctype,
+			"pos":                logPos,
+			"channel.show_label": showLabel,
 		}).Error("psql.Query failed: ", err)
 		return nil, err
 	}
@@ -138,19 +139,18 @@ func (im *channelImpl) GetChannelsByType(ctx context.Context, ctype int32, statu
 		selector := []interface{}{
 			&channelDTO.ID,
 			&channelDTO.Name,
-			&channelDTO.LinkURL,
-			&channelDTO.ChannelType,
 			&channelDTO.CreateDate,
 			&channelDTO.UpdateDate,
 			&channelDTO.ChannelLabels,
+			&channelDTO.ShowLabel,
 			&channelDTO.Order,
 			&channelDTO.ChannelStatus,
 		}
 
 		if err := rows.Scan(selector...); err != nil {
 			log.WithFields(log.Fields{
-				"pos":          logPos,
-				"channel.type": ctype,
+				"pos":                logPos,
+				"channel.show_label": showLabel,
 			}).Error("rows.Scan failed: ", err)
 			return nil, err
 		}
@@ -183,11 +183,10 @@ func (im *channelImpl) GetChannelByID(ctx context.Context, ID string) (*channelD
 		selector := []interface{}{
 			&channelDTO.ID,
 			&channelDTO.Name,
-			&channelDTO.LinkURL,
-			&channelDTO.ChannelType,
 			&channelDTO.CreateDate,
 			&channelDTO.UpdateDate,
 			&channelDTO.ChannelLabels,
+			&channelDTO.ShowLabel,
 			&channelDTO.Order,
 			&channelDTO.ChannelStatus,
 		}
@@ -229,11 +228,10 @@ func (im *channelImpl) GetChannelByIDs(ctx context.Context, IDs []string) ([]*ch
 		selector := []interface{}{
 			&channelDTO.ID,
 			&channelDTO.Name,
-			&channelDTO.LinkURL,
-			&channelDTO.ChannelType,
 			&channelDTO.CreateDate,
 			&channelDTO.UpdateDate,
 			&channelDTO.ChannelLabels,
+			&channelDTO.ShowLabel,
 			&channelDTO.Order,
 			&channelDTO.ChannelStatus,
 		}
@@ -281,11 +279,10 @@ func (im *channelImpl) SearchChannel(ctx context.Context, keyword string, status
 		selector := []interface{}{
 			&channelDTO.ID,
 			&channelDTO.Name,
-			&channelDTO.LinkURL,
-			&channelDTO.ChannelType,
 			&channelDTO.CreateDate,
 			&channelDTO.UpdateDate,
 			&channelDTO.ChannelLabels,
+			&channelDTO.ShowLabel,
 			&channelDTO.Order,
 			&channelDTO.ChannelStatus,
 		}
