@@ -196,8 +196,8 @@ func (im *bankImpl) GetAllBanks(ctx context.Context, status commonM.Status) ([]*
 
 		bankDTOs = append(bankDTOs, bankDTO)
 	}
-
 	return bankDTOs, nil
+
 }
 
 var SELECT_BANK_NAME_BY_ID_STAT = fmt.Sprintf(

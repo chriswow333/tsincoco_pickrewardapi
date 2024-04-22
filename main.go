@@ -29,6 +29,8 @@ import (
 	channelService "pickrewardapi/internal/domain/channel/service"
 	channelStore "pickrewardapi/internal/domain/channel/store"
 
+	imageApplication "pickrewardapi/internal/application/image/v1"
+
 	payApplication "pickrewardapi/internal/application/pay/v1"
 	payService "pickrewardapi/internal/domain/pay/service"
 	payStore "pickrewardapi/internal/domain/pay/store"
@@ -214,6 +216,7 @@ func initGrpcServer(
 	cardRewardApplication.NewCardRewardServer(s, cardRewardService)
 	channelApplication.NewChannelServer(s, channelService, channelLabelService)
 	payApplication.NewPayServer(s, payService)
+	imageApplication.NewImageServer(s)
 
 	log.WithFields(log.Fields{
 		"pos": logPos,

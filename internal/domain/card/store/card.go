@@ -378,6 +378,7 @@ func (im *cardImpl) GetLatestCards(ctx context.Context) ([]*cardDTO.CardDTO, err
 	}
 
 	return cardDTOs, nil
+
 }
 
 var SELECT_CARDS_BY_KEYWORD_STAT = fmt.Sprintf(
