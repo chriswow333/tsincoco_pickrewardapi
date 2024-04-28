@@ -6,7 +6,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"go.uber.org/dig"
 
-	cardRewardStore "pickrewardapi/internal/domain/card/store"
+	cardStore "pickrewardapi/internal/domain/card/store"
 
 	cardDTO "pickrewardapi/internal/domain/card/dto"
 	commonM "pickrewardapi/internal/shared/common/model"
@@ -19,15 +19,18 @@ type CardRewardService interface {
 type cardRewardImpl struct {
 	dig.In
 
-	cardRewardStore cardRewardStore.CardRewardStore
+	cardRewardStore   cardStore.CardRewardStore
+	feedbackTypeStore cardStore.FeedbackTypeStore
 }
 
 func NewCardReward(
-	cardRewardStore cardRewardStore.CardRewardStore,
+	cardRewardStore cardStore.CardRewardStore,
+	feedbackTypeStore cardStore.FeedbackTypeStore,
 ) CardRewardService {
 
 	impl := &cardRewardImpl{
-		cardRewardStore: cardRewardStore,
+		cardRewardStore:   cardRewardStore,
+		feedbackTypeStore: feedbackTypeStore,
 	}
 
 	return impl
@@ -39,9 +42,26 @@ func (im *cardRewardImpl) GetCardRewardsByCardID(ctx context.Context, cardID str
 	cardRewardDTOs, err := im.cardRewardStore.GetCardRewardsByCardID(ctx, cardID, commonM.Active)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"pos": logPos,
+			"pos":     logPos,
+			"card.id": cardID,
 		}).Error("cardRewardStore.GetCardRewardsByCardID failed", err)
 		return nil, err
+	}
+
+	for _, c := range cardRewardDTOs {
+		if c.FeedbackType != nil {
+
+			feedbackTypeDTO, err := im.feedbackTypeStore.GetFeedbackTypeByID(ctx, c.FeedbackType.ID)
+			if err != nil {
+				log.WithFields(log.Fields{
+					"pos":             logPos,
+					"feedbacktype.id": c.FeedbackType.ID,
+					"card.reward.id":  c.ID,
+				}).Error("feedbackTypeStore.GetFeedbackTypeByID failed", err)
+				return nil, err
+			}
+			c.FeedbackType = feedbackTypeDTO
+		}
 	}
 	return cardRewardDTOs, nil
 }

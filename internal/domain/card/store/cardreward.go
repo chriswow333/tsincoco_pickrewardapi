@@ -28,7 +28,8 @@ type CardRewardStore interface {
 type cardRewardImpl struct {
 	dig.In
 
-	primary *pgx.ConnPool
+	primary   *pgx.ConnPool
+	migration *pgx.ConnPool
 }
 
 func NewCardReward(sql *psql.Psql) CardRewardStore {
@@ -39,13 +40,14 @@ func NewCardReward(sql *psql.Psql) CardRewardStore {
 	}).Infof("init card reward store")
 
 	return &cardRewardImpl{
-		primary: sql.Primary,
+		primary:   sql.Primary,
+		migration: sql.Migration,
 	}
 }
 
 const CARD_REWARD = "card_reward"
 const ALL_CARD_REWARD_COLUMNS = " \"id\", \"card_id\", \"name\", \"description\", " +
-	" \"start_date\", \"end_date\", \"card_reward_type\", \"feedback_type\", \"task_labels\", " +
+	" \"start_date\", \"end_date\", \"card_reward_type\", \"feedback_type_id\", \"task_labels\", " +
 	" \"order\", \"card_reward_status\", \"create_date\", \"update_date\" "
 
 var MODIFIED_CARD_REWARD_STAT = fmt.Sprintf(
@@ -53,8 +55,8 @@ var MODIFIED_CARD_REWARD_STAT = fmt.Sprintf(
 		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) "+
 		" ON CONFLICT(id) DO UPDATE SET  "+
 		" card_id = $14, name = $15, description = $16, start_date = $17, end_date = $18, "+
-		" card_reward_type = $19, feedback_type = $20, \"task_labels\" = $21,  "+
-		" order = $22, card_reward_status = $23, create_date = $24, update_date = $25 ",
+		" card_reward_type = $19, feedback_type_id = $20, \"task_labels\" = $21,  "+
+		" \"order\" = $22, card_reward_status = $23, create_date = $24, update_date = $25 ",
 	CARD_REWARD, ALL_CARD_REWARD_COLUMNS,
 )
 
@@ -89,7 +91,7 @@ func (im *cardRewardImpl) ModifiedCardReward(ctx context.Context, cardRewardDTO 
 		cardRewardDTO.StartDate,
 		cardRewardDTO.EndDate,
 		cardRewardDTO.CardRewardType,
-		cardRewardDTO.FeedbackType,
+		cardRewardDTO.FeedbackType.ID,
 		cardRewardDTO.TaskLabelDTOs,
 		cardRewardDTO.Order,
 		cardRewardDTO.CardRewardStatus,
@@ -102,7 +104,7 @@ func (im *cardRewardImpl) ModifiedCardReward(ctx context.Context, cardRewardDTO 
 		cardRewardDTO.StartDate,
 		cardRewardDTO.EndDate,
 		cardRewardDTO.CardRewardType,
-		cardRewardDTO.FeedbackType,
+		cardRewardDTO.FeedbackType.ID,
 		cardRewardDTO.TaskLabelDTOs,
 		cardRewardDTO.Order,
 		cardRewardDTO.CardRewardStatus,
@@ -211,7 +213,9 @@ func (im *cardRewardImpl) GetCardRewardsByCardID(ctx context.Context, cardID str
 
 	for rows.Next() {
 
-		dto := &cardDTO.CardRewardDTO{}
+		dto := &cardDTO.CardRewardDTO{
+			FeedbackType: &cardDTO.FeedbackTypeDTO{},
+		}
 		selector := []interface{}{
 			&dto.ID,
 			&dto.CardID,
@@ -220,8 +224,7 @@ func (im *cardRewardImpl) GetCardRewardsByCardID(ctx context.Context, cardID str
 			&dto.StartDate,
 			&dto.EndDate,
 			&dto.CardRewardType,
-			&dto.CardRewardType,
-			&dto.FeedbackType,
+			&dto.FeedbackType.ID,
 			&dto.TaskLabelDTOs,
 			&dto.Order,
 			&dto.CardRewardStatus,
@@ -267,7 +270,9 @@ func (im *cardRewardImpl) GetAllCardRewardsByCardIDAndCardRewardType(ctx context
 	dtos := []*cardDTO.CardRewardDTO{}
 
 	for rows.Next() {
-		dto := &cardDTO.CardRewardDTO{}
+		dto := &cardDTO.CardRewardDTO{
+			FeedbackType: &cardDTO.FeedbackTypeDTO{},
+		}
 		selector := []interface{}{
 			&dto.ID,
 			&dto.CardID,
@@ -276,8 +281,7 @@ func (im *cardRewardImpl) GetAllCardRewardsByCardIDAndCardRewardType(ctx context
 			&dto.StartDate,
 			&dto.EndDate,
 			&dto.CardRewardType,
-			&dto.CardRewardType,
-			&dto.FeedbackType,
+			&dto.FeedbackType.ID,
 			&dto.TaskLabelDTOs,
 			&dto.Order,
 			&dto.CardRewardStatus,
@@ -367,7 +371,9 @@ func (im *cardRewardImpl) GetCardRewardByID(ctx context.Context, ID string) (*ca
 
 	defer rows.Close()
 	if rows.Next() {
-		dto := &cardDTO.CardRewardDTO{}
+		dto := &cardDTO.CardRewardDTO{
+			FeedbackType: &cardDTO.FeedbackTypeDTO{},
+		}
 		selector := []interface{}{
 			&dto.ID,
 			&dto.CardID,
@@ -376,8 +382,7 @@ func (im *cardRewardImpl) GetCardRewardByID(ctx context.Context, ID string) (*ca
 			&dto.StartDate,
 			&dto.EndDate,
 			&dto.CardRewardType,
-			&dto.CardRewardType,
-			&dto.FeedbackType,
+			&dto.FeedbackType.ID,
 			&dto.TaskLabelDTOs,
 			&dto.Order,
 			&dto.CardRewardStatus,

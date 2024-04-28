@@ -23,7 +23,7 @@ import (
 	cardService "pickrewardapi/internal/domain/card/service"
 	cardStore "pickrewardapi/internal/domain/card/store"
 
-	cardRewardApplication "pickrewardapi/internal/application/card_reward/v1"
+	cardRewardApplication "pickrewardapi/internal/application/cardreward/v1"
 
 	channelApplication "pickrewardapi/internal/application/channel/v1"
 	channelService "pickrewardapi/internal/domain/channel/service"

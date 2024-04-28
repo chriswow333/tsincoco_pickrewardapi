@@ -8,6 +8,7 @@ create table channel (
 		"channel_labels" JSONB, 
 		"show_label" varchar(36),
 		"order" INT,
-		"channel_status" INT
+		"channel_status" INT,
+		"image_name" VARCHAR(255)
 )
 

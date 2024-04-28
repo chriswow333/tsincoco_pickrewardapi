@@ -43,15 +43,15 @@ func NewChannel(sql *psql.Psql) ChannelStore {
 
 const CHANNEL = "channel"
 const ALL_CAHNNEL_COLUMNS = " \"id\", \"name\", \"create_date\", \"update_date\", " +
-	" \"channel_labels\", \"show_label\", \"order\", \"channel_status\" "
+	" \"channel_labels\", \"show_label\", \"order\", \"channel_status\", \"image_name\" "
 
 var MODIFIED_CHANNEL_STAT = fmt.Sprintf("INSERT INTO %s "+
 	" (%s) "+
-	" VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"+
+	" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"+
 	" ON CONFLICT(id) DO UPDATE SET  "+
-	" \"name\" = $9, \"create_date\" = $10, \"update_date\" = $11, "+
-	" \"channel_labels\" = $12, \"show_label\" = $13, \"order\" = $14, "+
-	" \"channel_status\" = $15 ", CHANNEL, ALL_CAHNNEL_COLUMNS)
+	" \"name\" = $10, \"create_date\" = $11, \"update_date\" = $12, "+
+	" \"channel_labels\" = $13, \"show_label\" = $14, \"order\" = $15, "+
+	" \"channel_status\" = $16, \"image_name\" = $16 ", CHANNEL, ALL_CAHNNEL_COLUMNS)
 
 func (im *channelImpl) ModifiedChannel(ctx context.Context, channelDTO *channelDTO.ChannelDTO) error {
 	logPos := "[channel.store][ModifiedChannel]"
@@ -84,6 +84,7 @@ func (im *channelImpl) ModifiedChannel(ctx context.Context, channelDTO *channelD
 		channelDTO.ShowLabel,
 		channelDTO.Order,
 		channelDTO.ChannelStatus,
+		channelDTO.ImageName,
 
 		channelDTO.Name,
 		channelDTO.CreateDate,
@@ -92,6 +93,7 @@ func (im *channelImpl) ModifiedChannel(ctx context.Context, channelDTO *channelD
 		channelDTO.ShowLabel,
 		channelDTO.Order,
 		channelDTO.ChannelStatus,
+		channelDTO.ImageName,
 	}
 
 	if _, err := tx.Exec(MODIFIED_CHANNEL_STAT, updater...); err != nil {
@@ -145,6 +147,7 @@ func (im *channelImpl) GetChannelsByShowLabel(ctx context.Context, showLabel str
 			&channelDTO.ShowLabel,
 			&channelDTO.Order,
 			&channelDTO.ChannelStatus,
+			&channelDTO.ImageName,
 		}
 
 		if err := rows.Scan(selector...); err != nil {
@@ -189,6 +192,7 @@ func (im *channelImpl) GetChannelByID(ctx context.Context, ID string) (*channelD
 			&channelDTO.ShowLabel,
 			&channelDTO.Order,
 			&channelDTO.ChannelStatus,
+			&channelDTO.ImageName,
 		}
 
 		if err := rows.Scan(selector...); err != nil {
@@ -234,6 +238,7 @@ func (im *channelImpl) GetChannelByIDs(ctx context.Context, IDs []string) ([]*ch
 			&channelDTO.ShowLabel,
 			&channelDTO.Order,
 			&channelDTO.ChannelStatus,
+			&channelDTO.ImageName,
 		}
 
 		if err := rows.Scan(selector...); err != nil {
@@ -285,6 +290,7 @@ func (im *channelImpl) SearchChannel(ctx context.Context, keyword string, status
 			&channelDTO.ShowLabel,
 			&channelDTO.Order,
 			&channelDTO.ChannelStatus,
+			&channelDTO.ImageName,
 		}
 
 		if err := rows.Scan(selector...); err != nil {

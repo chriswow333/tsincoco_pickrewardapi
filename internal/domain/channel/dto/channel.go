@@ -14,7 +14,7 @@ type ChannelDTO struct {
 	ChannelLabels []string `json:"channelLabels"`
 	ShowLabel     string   `json:"showLabel"`
 
-	Order int32 `json:"order"`
-
+	Order         int32          `json:"order"`
+	ImageName     string         `json:"imageName"`
 	ChannelStatus commonM.Status `json:"channelStatus"`
 }

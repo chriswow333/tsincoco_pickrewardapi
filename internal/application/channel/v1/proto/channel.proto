@@ -67,6 +67,7 @@ message ChannelsReply {
     string showLabel = 6;
     int32 order = 7;
     int32 channelStatus = 8;
+    string imageName = 9;
   }
 
 
@@ -93,6 +94,7 @@ message SearchChannelsReply{
     string showLabel = 6;
     int32 order = 7;
     int32 channelStatus = 8;
+    string imageName = 9;
   }
 
   Reply reply = 1;

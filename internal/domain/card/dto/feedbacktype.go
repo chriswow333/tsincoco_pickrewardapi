@@ -8,8 +8,7 @@ const (
 )
 
 type FeedbackTypeDTO struct {
-	ID string `json:"id"`
-
+	ID           string       `json:"id"`
 	Name         string       `json:"name"`
 	FeedbackType FeedbackType `json:"feedbackType"`
 	CreateDate   int64        `json:"createDate"`

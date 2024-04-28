@@ -1,7 +1,7 @@
 package handler
 
 import (
-	pb "pickrewardapi/internal/application/card_reward/v1/proto/generated"
+	pb "pickrewardapi/internal/application/cardreward/v1/proto/generated"
 	cardDTO "pickrewardapi/internal/domain/card/dto"
 )
 
@@ -20,12 +20,15 @@ func TransferCardRewards2CardRewardsReply(cardRewardDTOs []*cardDTO.CardRewardDT
 			})
 		}
 
-		feedbackType := &pb.CardRewardsReply_FeedbackType{
-			Id:           c.FeedbackType.ID,
-			Name:         c.FeedbackType.Name,
-			FeedbackType: int32(c.FeedbackType.FeedbackType),
-			CreateDate:   c.FeedbackType.CreateDate,
-			Updatedate:   c.FeedbackType.UpdateDate,
+		var feedbackType *pb.CardRewardsReply_FeedbackType
+
+		if c.FeedbackType != nil {
+			feedbackType = &pb.CardRewardsReply_FeedbackType{}
+			feedbackType.Id = c.FeedbackType.ID
+			feedbackType.Name = c.FeedbackType.Name
+			feedbackType.FeedbackType = int32(c.FeedbackType.FeedbackType)
+			feedbackType.CreateDate = c.FeedbackType.CreateDate
+			feedbackType.UpdateDate = c.FeedbackType.UpdateDate
 		}
 
 		taskLabels := []*pb.CardRewardsReply_TaskLabel{}

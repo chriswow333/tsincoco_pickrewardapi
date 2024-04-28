@@ -144,7 +144,7 @@ func (im *feedbackTypeImpl) GetAllFeedbackTypes(ctx context.Context) ([]*cardDTO
 
 var SELECT_FEEDBACK_TYPE_BY_ID_STAT = fmt.Sprintf("SELECT %s FROM %s "+
 	" WHERE \"id\" = $1 ",
-	ALL_TASK_LABEL_COLUMNS, FEEDBACK_TYPE,
+	ALL_FEEDBACK_TYPE_COLUMNS, FEEDBACK_TYPE,
 )
 
 func (im *feedbackTypeImpl) GetFeedbackTypeByID(ctx context.Context, ID string) (*cardDTO.FeedbackTypeDTO, error) {

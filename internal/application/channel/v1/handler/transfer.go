@@ -31,6 +31,7 @@ func TransferChannels2ChannelsReply(channelDTOs []*channelDTO.ChannelDTO) []*pb.
 			ShowLabel:     c.ShowLabel,
 			Order:         c.Order,
 			ChannelStatus: int32(c.ChannelStatus),
+			ImageName:     c.ImageName,
 		})
 	}
 	return channels
@@ -50,6 +51,7 @@ func TransferSearchChannels2SearchChannelsReply(channelDTOs []*channelDTO.Channe
 			ShowLabel:     c.ShowLabel,
 			Order:         c.Order,
 			ChannelStatus: int32(c.ChannelStatus),
+			ImageName:     c.ImageName,
 		})
 	}
 

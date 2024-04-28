@@ -9,8 +9,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
-	"pickrewardapi/internal/application/card_reward/v1/handler"
-	pb "pickrewardapi/internal/application/card_reward/v1/proto/generated"
+	"pickrewardapi/internal/application/cardreward/v1/handler"
+	pb "pickrewardapi/internal/application/cardreward/v1/proto/generated"
 
 	cardService "pickrewardapi/internal/domain/card/service"
 )

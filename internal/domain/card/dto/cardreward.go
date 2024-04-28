@@ -2,12 +2,6 @@ package dto
 
 import commonM "pickrewardapi/internal/shared/common/model"
 
-type DescriptionDTO struct {
-	Name  string   `json:"name"`
-	Order int32    `json:"order"`
-	Desc  []string `json:"desc"`
-}
-
 type CardRewardType int32
 
 const (
@@ -36,4 +30,10 @@ type CardRewardDTO struct {
 
 	CreateDate int64 `json:"createDate"`
 	UpdateDate int64 `json:"updateDate"`
+}
+
+type DescriptionDTO struct {
+	Name  string   `json:"name"`
+	Order int32    `json:"order"`
+	Desc  []string `json:"desc"`
 }

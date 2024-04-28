@@ -43,7 +43,7 @@ message CardRewardsReply {
     string name = 2;
     int32 feedbackType = 3;
     int64 createDate = 4;
-    int64 updatedate = 5;
+    int64 updateDate = 5;
   }
 
   message TaskLabel {
