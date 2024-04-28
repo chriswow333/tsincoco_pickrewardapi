@@ -25,7 +25,8 @@ type PayStore interface {
 type payImpl struct {
 	dig.In
 
-	primary *pgx.ConnPool
+	primary   *pgx.ConnPool
+	migration *pgx.ConnPool
 }
 
 func NewPay(sql *psql.Psql) PayStore {
@@ -36,7 +37,8 @@ func NewPay(sql *psql.Psql) PayStore {
 	}).Infof("init bank store")
 
 	return &payImpl{
-		primary: sql.Primary,
+		primary:   sql.Primary,
+		migration: sql.Migration,
 	}
 }
 
@@ -48,7 +50,7 @@ var MODIFIED_PAY_STAT = fmt.Sprintf(
 		" VALUES ($1, $2, $3, $4, $5, $6) "+
 		" ON CONFLICT(id) DO UPDATE SET  "+
 		" \"name\" = $7, \"order\" = $8, "+
-		" \"bank_status\" = $9, \"create_date\" = $10 , \"update_date\" = $11 ",
+		" \"pay_status\" = $9, \"create_date\" = $10 , \"update_date\" = $11 ",
 	PAY, ALL_COLUMNS,
 )
 
