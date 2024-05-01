@@ -45,14 +45,14 @@ func NewCard(sql *psql.Psql) CardStore {
 
 const CARD = "card"
 const ALL_CARD_COLUMNS = " \"id\", \"name\", \"descriptions\",\"link_url\", " +
-	" \"bank_id\", \"order\", \"card_status\", \"create_date\", \"update_date\" "
+	" \"bank_id\", \"order\", \"card_status\", \"create_date\", \"update_date\", \"image_name\" "
 
 var MODIFIED_CARD_STAT = fmt.Sprintf(
 	"INSERT INTO %s (%s) "+
-		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"+
+		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"+
 		" ON CONFLICT(id) DO UPDATE SET  "+
-		" \"name\" = $10, \"descriptions\" = $11, \"link_url\" = $12, \"bank_id\" = $13, \"order\" = $14, "+
-		" \"card_status\" = $15 ,\"create_date\" = $16, \"update_date\" = $17 ",
+		" \"name\" = $11, \"descriptions\" = $12, \"link_url\" = $13, \"bank_id\" = $14, \"order\" = $15, "+
+		" \"card_status\" = $16 ,\"create_date\" = $17, \"update_date\" = $18, \"image_name\" = $19 ",
 	CARD, ALL_CARD_COLUMNS,
 )
 
@@ -88,6 +88,7 @@ func (im *cardImpl) ModifiedCard(ctx context.Context, cardDTO *cardDTO.CardDTO) 
 		cardDTO.CardStatus,
 		cardDTO.CreateDate,
 		cardDTO.UpdateDate,
+		cardDTO.ImageName,
 
 		cardDTO.Name,
 		cardDTO.Descriptions,
@@ -97,6 +98,7 @@ func (im *cardImpl) ModifiedCard(ctx context.Context, cardDTO *cardDTO.CardDTO) 
 		cardDTO.CardStatus,
 		cardDTO.CreateDate,
 		cardDTO.UpdateDate,
+		cardDTO.ImageName,
 	}
 
 	if _, err := tx.Exec(MODIFIED_CARD_STAT, updater...); err != nil {
@@ -120,7 +122,7 @@ func (im *cardImpl) ModifiedCard(ctx context.Context, cardDTO *cardDTO.CardDTO) 
 
 var INSERT_CARD_STAT = fmt.Sprintf(
 	"INSERT INTO %s (%s) "+
-		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+		" VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
 	CARD, ALL_CARD_COLUMNS,
 )
 
@@ -156,6 +158,7 @@ func (im *cardImpl) CreateCard(ctx context.Context, cardDTO *cardDTO.CardDTO) er
 		cardDTO.CardStatus,
 		cardDTO.CreateDate,
 		cardDTO.UpdateDate,
+		cardDTO.ImageName,
 	}
 
 	if _, err := tx.Exec(INSERT_CARD_STAT, updater...); err != nil {
@@ -212,6 +215,7 @@ func (im *cardImpl) GetByCardID(ctx context.Context, ID string) (*cardDTO.CardDT
 			&c.CardStatus,
 			&c.CreateDate,
 			&c.UpdateDate,
+			&c.ImageName,
 		}
 
 		if err := rows.Scan(selector...); err != nil {
@@ -270,6 +274,7 @@ func (im *cardImpl) GetCardsByBankID(ctx context.Context, bankID string, status 
 			&cardDTO.CardStatus,
 			&cardDTO.CreateDate,
 			&cardDTO.UpdateDate,
+			&cardDTO.ImageName,
 		}
 
 		if err := rows.Scan(selector...); err != nil {
@@ -318,6 +323,7 @@ func (im *cardImpl) GetAllCards(ctx context.Context) ([]*cardDTO.CardDTO, error)
 			&cardDTO.CardStatus,
 			&cardDTO.CreateDate,
 			&cardDTO.UpdateDate,
+			&cardDTO.ImageName,
 		}
 
 		if err := rows.Scan(selector...); err != nil {
@@ -366,6 +372,7 @@ func (im *cardImpl) GetLatestCards(ctx context.Context) ([]*cardDTO.CardDTO, err
 			&cardDTO.CardStatus,
 			&cardDTO.CreateDate,
 			&cardDTO.UpdateDate,
+			&cardDTO.ImageName,
 		}
 
 		if err := rows.Scan(selector...); err != nil {
@@ -425,6 +432,7 @@ func (im *cardImpl) SearchCard(ctx context.Context, keyword string, status commo
 			&cardDTO.CardStatus,
 			&cardDTO.CreateDate,
 			&cardDTO.UpdateDate,
+			&cardDTO.ImageName,
 		}
 
 		if err := rows.Scan(selector...); err != nil {
